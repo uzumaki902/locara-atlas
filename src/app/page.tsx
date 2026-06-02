@@ -549,10 +549,10 @@ export default function Home() {
   const datasetStats = useMemo(() => {
     const totalVideos = videos.length;
     const totalCategories = new Set(videos.map((v) => v.mainCategory)).size;
-    
+
     const approvedVideos = videos.filter((v) => v.status === "Completed").length;
     const approvedPercent = totalVideos > 0 ? Math.round((approvedVideos / totalVideos) * 100) : 0;
-    
+
     let totalSeconds = 0;
     videos.forEach((v) => {
       const parts = v.videoLength.split(":");
@@ -568,15 +568,15 @@ export default function Home() {
 
     const piiCleared = videos.filter((v) => v.piiCheckStatus === "Passed").length;
     const piiPercent = totalVideos > 0 ? Math.round((piiCleared / totalVideos) * 100) : 0;
-    
+
     const goodLighting = videos.filter((v) => v.lightingQuality === "Good").length;
     const lightingPercent = totalVideos > 0 ? Math.round((goodLighting / totalVideos) * 100) : 0;
-    
+
     const handsVisible = videos.filter((v) => v.handsVisible).length;
     const handsPercent = totalVideos > 0 ? Math.round((handsVisible / totalVideos) * 100) : 0;
 
     const envCount = new Set(videos.map((v) => v.locationEnvironment)).size;
-    
+
     const catCounts = videos.reduce((acc, v) => {
       acc[v.mainCategory] = (acc[v.mainCategory] || 0) + 1;
       return acc;
@@ -644,9 +644,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex flex-col md:flex-row min-h-screen md:h-screen overflow-x-hidden md:overflow-hidden bg-background">
       {/* ─── LEFT SIDEBAR ─── */}
-      <aside className="w-[320px] min-w-[320px] flex flex-col border-r border-border bg-background">
+      <aside className="w-full md:w-[250px] lg:w-[320px] md:min-w-[250px] lg:min-w-[320px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background flex-shrink-0">
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-border">
           <div className="flex items-center gap-3">
@@ -663,7 +663,7 @@ export default function Home() {
                 Locara Atlas
               </h1>
               <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
-                Dataset Explorer
+                Sample Dataset Explorer
               </p>
             </div>
           </div>
@@ -688,33 +688,8 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Search */}
-        <div className="px-4 pt-3 pb-2">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-            </svg>
-            <input
-              id="search-videos"
-              type="text"
-              placeholder="Search videos, workers…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-[7px] text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
-            />
-          </div>
-        </div>
-
         {/* Category Filter */}
-        <div className="px-4 pb-3 pt-1">
+        <div className="px-4 pt-4 pb-3">
           <div className="flex gap-1.5 flex-wrap">
             {categories.map((cat) => {
               const isActive = cat === activeCategory;
@@ -741,8 +716,32 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Search */}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+            </svg>
+            <input
+              id="search-videos"
+              type="text"
+              placeholder="Search videos, workers…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-[7px] text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
+            />
+          </div>
+        </div>
+
         {/* Video List */}
-        <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5">
+        <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5 max-h-[40vh] md:max-h-none">
           {filtered.length === 0 && (
             <div className="text-center py-16 text-text-secondary text-[12px]">
               No videos match your filters.
@@ -796,7 +795,7 @@ export default function Home() {
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 md:overflow-hidden">
         {/* Top bar */}
         <header className="h-12 min-h-[48px] flex items-center justify-between px-5 border-b border-border bg-background/90 backdrop-blur-sm">
           <div className="flex items-center gap-3 min-w-0">
@@ -824,10 +823,10 @@ export default function Home() {
         </header>
 
         {/* Player + Metadata */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
           {/* Video Player Area */}
           <div className="flex-1 flex flex-col min-w-0 p-4">
-            <div ref={videoContainerRef} className="relative w-full rounded-lg overflow-hidden bg-black/50 border border-border flex-1 flex items-center justify-center group">
+            <div ref={videoContainerRef} className="relative w-full aspect-video lg:aspect-auto rounded-lg overflow-hidden bg-black/50 border border-border flex-1 flex items-center justify-center group">
               {selected.videoUrl ? (
                 <>
                   <video
@@ -956,7 +955,7 @@ export default function Home() {
           </div>
 
           {/* ─── METADATA PANEL ─── */}
-          <aside className="w-[320px] min-w-[320px] border-l border-border overflow-y-auto bg-background">
+          <aside className="w-full lg:w-[320px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l border-border lg:overflow-y-auto bg-background flex-shrink-0">
             <div className="px-5 py-3.5 border-b border-border">
               <h3 className="text-[20px] font-semibold text-foreground tracking-tight">
                 Metadata
