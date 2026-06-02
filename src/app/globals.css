@@ -51,10 +51,7 @@ body {
   background: #2A2A40;
 }
 
-/* Video player native controls styling */
-video::-webkit-media-controls-panel {
-  background: rgba(20, 20, 31, 0.95);
-}
+
 
 /* Selection */
 ::selection {
