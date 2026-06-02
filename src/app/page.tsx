@@ -546,6 +546,64 @@ export default function Home() {
     return ["All", ...cats];
   }, []);
 
+  const datasetStats = useMemo(() => {
+    const totalVideos = videos.length;
+    const totalCategories = new Set(videos.map((v) => v.mainCategory)).size;
+    
+    const approvedVideos = videos.filter((v) => v.status === "Completed").length;
+    const approvedPercent = totalVideos > 0 ? Math.round((approvedVideos / totalVideos) * 100) : 0;
+    
+    let totalSeconds = 0;
+    videos.forEach((v) => {
+      const parts = v.videoLength.split(":");
+      if (parts.length === 3) {
+        totalSeconds += parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+      } else if (parts.length === 2) {
+        totalSeconds += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      }
+    });
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const durationStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m ${totalSeconds % 60}s`;
+
+    const piiCleared = videos.filter((v) => v.piiCheckStatus === "Passed").length;
+    const piiPercent = totalVideos > 0 ? Math.round((piiCleared / totalVideos) * 100) : 0;
+    
+    const goodLighting = videos.filter((v) => v.lightingQuality === "Good").length;
+    const lightingPercent = totalVideos > 0 ? Math.round((goodLighting / totalVideos) * 100) : 0;
+    
+    const handsVisible = videos.filter((v) => v.handsVisible).length;
+    const handsPercent = totalVideos > 0 ? Math.round((handsVisible / totalVideos) * 100) : 0;
+
+    const envCount = new Set(videos.map((v) => v.locationEnvironment)).size;
+    
+    const catCounts = videos.reduce((acc, v) => {
+      acc[v.mainCategory] = (acc[v.mainCategory] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const mostCommonCat = Object.entries(catCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
+    const highestRes = [...videos].sort((a, b) => {
+      const resA = parseInt(a.resolution.split("×")[0] || a.resolution.split("x")[0]) || 0;
+      const resB = parseInt(b.resolution.split("×")[0] || b.resolution.split("x")[0]) || 0;
+      return resB - resA;
+    })[0]?.resolution || "N/A";
+
+    return {
+      totalVideos,
+      totalCategories,
+      approvedVideos,
+      approvedPercent,
+      durationStr,
+      piiPercent,
+      lightingPercent,
+      handsPercent,
+      envCount,
+      mostCommonCat,
+      highestRes
+    };
+  }, []);
+
   const selected = useMemo(
     () => videos.find((v) => v.videoId === selectedId) ?? videos[0],
     [selectedId]
@@ -601,14 +659,33 @@ export default function Home() {
               priority
             />
             <div>
-              <h1 className="text-[13px] font-semibold text-foreground tracking-wide leading-tight uppercase">
+              <h1 className="text-[30px] font-bold text-foreground tracking-tight leading-tight uppercase">
                 Locara Atlas
               </h1>
-              <p className="text-[10px] text-text-secondary leading-tight mt-0.5">
-                Locara Atlas Sample
+              <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
+                Dataset Explorer
               </p>
             </div>
-            <div>{videos.length} videos</div>
+          </div>
+
+          {/* Feature 1: Dataset Overview Cards */}
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
+              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Total Videos</span>
+              <span className="text-[13px] font-medium text-foreground">{datasetStats.totalVideos}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
+              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Categories</span>
+              <span className="text-[13px] font-medium text-foreground">{datasetStats.totalCategories}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
+              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Approved</span>
+              <span className="text-[13px] font-medium text-foreground">{datasetStats.approvedVideos}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
+              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Total Footage</span>
+              <span className="text-[13px] font-medium text-foreground">{datasetStats.durationStr}</span>
+            </div>
           </div>
         </div>
 
@@ -631,7 +708,7 @@ export default function Home() {
               placeholder="Search videos, workers…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-[7px] text-[12px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
+              className="w-full pl-8 pr-3 py-[7px] text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
             />
           </div>
         </div>
@@ -650,7 +727,7 @@ export default function Home() {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={`
-                    text-[11px] px-2.5 py-[4px] rounded-md font-medium transition-all duration-150 cursor-pointer
+                    text-[13px] font-medium px-3 py-1 rounded-md transition-all duration-150 cursor-pointer
                     ${isActive
                       ? "bg-accent/15 text-accent border border-accent/25"
                       : "bg-surface text-text-secondary border border-border hover:border-border-hover hover:text-foreground/70"
@@ -688,27 +765,27 @@ export default function Home() {
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span
-                    className={`text-[12px] font-medium leading-tight ${isActive ? "text-accent" : "text-foreground"
+                    className={`text-[16px] font-semibold leading-tight ${isActive ? "text-accent" : "text-foreground"
                       }`}
                   >
                     {v.taskType}
                   </span>
-                  <span className="text-[10px] font-mono text-text-secondary flex-shrink-0 mt-0.5">
+                  <span className="text-[12px] font-medium font-mono text-text-secondary flex-shrink-0 mt-0.5">
                     {v.videoLength}
                   </span>
                 </div>
-                <p className="text-[11px] text-text-secondary truncate mb-1.5">
+                <p className="text-[14px] font-normal text-text-secondary truncate mb-1.5">
                   Category: {v.mainCategory}
                 </p>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-flex text-[9px] font-medium px-1.5 py-[1px] rounded ${statusColor(
+                    className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${statusColor(
                       v.status
                     )}`}
                   >
                     {v.status}
                   </span>
-                  <span className="text-[9px] text-text-secondary/50">
+                  <span className="text-[12px] font-medium text-text-secondary/50">
                     {v.mainCategory}
                   </span>
                 </div>
@@ -724,20 +801,20 @@ export default function Home() {
         <header className="h-12 min-h-[48px] flex items-center justify-between px-5 border-b border-border bg-background/90 backdrop-blur-sm">
           <div className="flex items-center gap-3 min-w-0">
             <div className="min-w-0">
-              <h2 className="text-[13px] font-medium text-foreground truncate">
+              <h2 className="text-[20px] font-semibold text-foreground truncate">
                 {selected.taskType}
               </h2>
-              <p className="text-[10px] text-text-secondary">
+              <p className="text-[14px] font-normal text-text-secondary">
                 {selected.mainCategory} · {selected.videoId}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-text-secondary mr-2">
+            <span className="text-[12px] font-medium text-text-secondary mr-2">
               {selected.mainCategory}
             </span>
             <span
-              className={`text-[10px] font-medium px-2 py-[3px] rounded ${statusColor(
+              className={`text-[11px] font-medium px-2 py-[3px] rounded ${statusColor(
                 selected.status
               )}`}
             >
@@ -840,12 +917,12 @@ export default function Home() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-[12px] font-medium text-foreground mb-1">
+                    <p className="text-[14px] font-medium text-foreground mb-1">
                       No Video URL Configured
                     </p>
-                    <p className="text-[11px] text-text-secondary max-w-xs">
+                    <p className="text-[14px] font-normal text-text-secondary max-w-xs">
                       Paste a Supabase Storage URL into the{" "}
-                      <code className="text-accent bg-accent/10 px-1 py-0.5 rounded text-[10px] font-mono">
+                      <code className="text-accent bg-accent/10 px-1 py-0.5 rounded text-[12px] font-mono font-medium">
                         videoUrl
                       </code>{" "}
                       field for <strong>{selected.videoId}</strong> to enable playback.
@@ -867,10 +944,10 @@ export default function Home() {
                   key={s.label}
                   className="flex items-center gap-2 bg-surface border border-border rounded-md px-2.5 py-1"
                 >
-                  <span className="text-[9px] uppercase tracking-wider text-text-secondary font-medium">
+                  <span className="text-[12px] font-medium uppercase tracking-wider text-text-secondary">
                     {s.label}
                   </span>
-                  <span className="text-[11px] font-mono text-foreground">
+                  <span className="text-[14px] font-medium font-mono text-foreground">
                     {s.value}
                   </span>
                 </div>
@@ -881,10 +958,10 @@ export default function Home() {
           {/* ─── METADATA PANEL ─── */}
           <aside className="w-[320px] min-w-[320px] border-l border-border overflow-y-auto bg-background">
             <div className="px-5 py-3.5 border-b border-border">
-              <h3 className="text-[12px] font-semibold text-foreground tracking-tight">
+              <h3 className="text-[20px] font-semibold text-foreground tracking-tight">
                 Metadata
               </h3>
-              <p className="text-[10px] text-text-secondary mt-0.5">
+              <p className="text-[14px] font-normal text-text-secondary mt-0.5">
                 All fields for {selected.videoId}
               </p>
             </div>
@@ -954,11 +1031,27 @@ export default function Home() {
                 <MetadataRow
                   label="PII Check Status"
                   value={
-                    <span className={`font-medium ${piiColor(selected.piiCheckStatus)}`}>
+                    <span className={`text-[12px] font-medium ${piiColor(selected.piiCheckStatus)}`}>
                       {selected.piiCheckStatus}
                     </span>
                   }
                 />
+              </MetadataSection>
+
+              {/* Feature 3: Dataset Health Panel */}
+              <MetadataSection title="Dataset Health">
+                <ProgressBar label="Approved" percent={datasetStats.approvedPercent} color="bg-accent" />
+                <ProgressBar label="PII Cleared" percent={datasetStats.piiPercent} color="bg-emerald-500" />
+                <ProgressBar label="Good Lighting" percent={datasetStats.lightingPercent} color="bg-amber-400" />
+                <ProgressBar label="Hands Visible" percent={datasetStats.handsPercent} color="bg-blue-400" />
+              </MetadataSection>
+
+              {/* Feature 4: Dataset Insights Panel */}
+              <MetadataSection title="Dataset Insights">
+                <MetadataRow label="Most Common Cat." value={datasetStats.mostCommonCat} />
+                <MetadataRow label="Highest Resolution" value={datasetStats.highestRes} mono />
+                <MetadataRow label="Environments" value={datasetStats.envCount.toString()} mono />
+                <MetadataRow label="Dataset Approved" value={`${datasetStats.approvedPercent}%`} mono />
               </MetadataSection>
 
 
@@ -981,7 +1074,7 @@ function MetadataSection({
 }) {
   return (
     <div>
-      <h4 className="text-[9px] uppercase tracking-[0.1em] font-semibold text-text-secondary/70 mb-2">
+      <h4 className="text-[16px] font-semibold text-foreground mb-3">
         {title}
       </h4>
       <div className="space-y-1.5 bg-surface border border-border rounded-lg p-2.5">
@@ -1002,13 +1095,27 @@ function MetadataRow({
 }) {
   return (
     <div className="flex items-start justify-between gap-3">
-      <span className="text-[10px] text-text-secondary flex-shrink-0">{label}</span>
+      <span className="text-[12px] font-medium text-text-secondary flex-shrink-0">{label}</span>
       <span
-        className={`text-[11px] text-foreground text-right ${mono ? "font-mono" : ""
+        className={`text-[14px] font-medium text-foreground text-right ${mono ? "font-mono" : ""
           }`}
       >
         {value}
       </span>
+    </div>
+  );
+}
+
+function ProgressBar({ label, percent, color }: { label: string; percent: number; color: string }) {
+  return (
+    <div className="flex flex-col gap-1 w-full py-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[12px] font-medium text-text-secondary">{label}</span>
+        <span className="text-[12px] font-medium font-mono text-foreground">{percent}%</span>
+      </div>
+      <div className="w-full h-1.5 bg-background border border-border rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full`} style={{ width: `${percent}%` }} />
+      </div>
     </div>
   );
 }
