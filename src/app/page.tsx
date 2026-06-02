@@ -480,6 +480,7 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string>(videos[0].videoId);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -690,29 +691,58 @@ export default function Home() {
         </div>
         {/* Category Filter */}
         <div className="px-4 pt-4 pb-3">
-          <div className="flex gap-1.5 flex-wrap">
-            {categories.map((cat) => {
-              const isActive = cat === activeCategory;
-              const count =
-                cat === "All"
-                  ? videos.length
-                  : videos.filter((v) => v.mainCategory === cat).length;
-              return (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`
-                    text-[13px] font-medium px-3 py-1 rounded-md transition-all duration-150 cursor-pointer
-                    ${isActive
-                      ? "bg-accent/15 text-accent border border-accent/25"
-                      : "bg-surface text-text-secondary border border-border hover:border-border-hover hover:text-foreground/70"
-                    }
-                  `}
-                >
-                  {cat} ({count})
-                </button>
-              );
-            })}
+          <div 
+            className="flex items-center justify-between cursor-pointer group"
+            onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+          >
+            <div>
+              <h3 className="text-[12px] font-semibold text-text-secondary uppercase tracking-wider mb-1">
+                Categories ({categories.length})
+              </h3>
+              <p className="text-[14px] font-medium text-foreground">
+                <span className="text-text-secondary font-normal mr-1">Selected:</span> 
+                {activeCategory} ({activeCategory === "All" ? videos.length : videos.filter(v => v.mainCategory === activeCategory).length})
+              </p>
+            </div>
+            <button className="text-[12px] font-medium text-text-secondary flex items-center gap-1 group-hover:text-foreground transition-colors">
+              {isCategoriesExpanded ? "▲ Hide Categories" : "▼ Show Categories"}
+            </button>
+          </div>
+          
+          <div 
+            className={`grid transition-all duration-300 ease-in-out ${
+              isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+            }`}
+          >
+            <div className="overflow-hidden">
+              <div className="flex gap-1.5 flex-wrap">
+                {categories.map((cat) => {
+                  const isActive = cat === activeCategory;
+                  const count =
+                    cat === "All"
+                      ? videos.length
+                      : videos.filter((v) => v.mainCategory === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveCategory(cat);
+                      }}
+                      className={`
+                        text-[13px] font-medium px-3 py-1 rounded-md transition-all duration-150 cursor-pointer
+                        ${isActive
+                          ? "bg-accent/15 text-accent border border-accent/25"
+                          : "bg-surface text-text-secondary border border-border hover:border-border-hover hover:text-foreground/70"
+                        }
+                      `}
+                    >
+                      {cat} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
