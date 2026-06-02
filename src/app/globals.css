@@ -1,22 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0F0F14;
-  --foreground: #F0F0F0;
-  --surface: #1A1A2E;
-  --border: #2A2A3E;
+  --background: #09090F;
+  --foreground: #EAEAF0;
+  --surface: #14141F;
+  --surface-hover: #1A1A28;
+  --border: #1F1F30;
+  --border-hover: #2A2A40;
   --primary: #1A3C5E;
-  --accent: #2E86AB;
-  --text-secondary: #9090A0;
+  --accent: #3B9CC2;
+  --accent-dim: #2A7A9A;
+  --text-secondary: #6B6B80;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
   --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
   --color-primary: var(--primary);
   --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
   --color-text-secondary: var(--text-secondary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -25,25 +31,33 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Inter", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2A2A3E;
-  border-radius: 3px;
+  background: #1F1F30;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3A3A4E;
+  background: #2A2A40;
 }
 
 /* Video player native controls styling */
 video::-webkit-media-controls-panel {
-  background: rgba(26, 26, 46, 0.9);
+  background: rgba(20, 20, 31, 0.95);
+}
+
+/* Selection */
+::selection {
+  background: rgba(59, 156, 194, 0.25);
+  color: #EAEAF0;
 }
