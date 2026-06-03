@@ -474,6 +474,14 @@ function piiColor(pii: Video["piiCheckStatus"]): string {
   }
 }
 
+/* ──────────────────────────── Helpers ──────────────────────────── */
+
+function getVideoSource(video: Video): string {
+  // In the future, this will fetch or return a signed URL.
+  // For now, it returns the internal storage reference directly.
+  return video.videoUrl;
+}
+
 /* ──────────────────────────── Component ──────────────────────────── */
 
 export default function Home() {
@@ -857,7 +865,7 @@ export default function Home() {
           {/* Video Player Area */}
           <div className="flex-1 flex flex-col min-w-0 p-4">
             <div ref={videoContainerRef} className="relative w-full aspect-video lg:aspect-auto rounded-lg overflow-hidden bg-black/50 border border-border flex-1 flex items-center justify-center group">
-              {selected.videoUrl ? (
+              {getVideoSource(selected) ? (
                 <>
                   <video
                     ref={videoRef}
@@ -869,9 +877,13 @@ export default function Home() {
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onClick={togglePlay}
+                    controlsList="nodownload"
+                    disablePictureInPicture
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
                     className="w-full h-full object-contain cursor-pointer"
                   >
-                    <source src={selected.videoUrl} type="video/mp4" />
+                    <source src={getVideoSource(selected)} type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
 
@@ -947,14 +959,10 @@ export default function Home() {
                   </div>
                   <div>
                     <p className="text-[14px] font-medium text-foreground mb-1">
-                      No Video URL Configured
+                      Internal Storage Reference Missing
                     </p>
                     <p className="text-[14px] font-normal text-text-secondary max-w-xs">
-                      Paste a Supabase Storage URL into the{" "}
-                      <code className="text-accent bg-accent/10 px-1 py-0.5 rounded text-[12px] font-mono font-medium">
-                        videoUrl
-                      </code>{" "}
-                      field for <strong>{selected.videoId}</strong> to enable playback.
+                      A Protected Asset URL must be configured for <strong>{selected.videoId}</strong> to enable playback.
                     </p>
                   </div>
                 </div>
@@ -998,6 +1006,7 @@ export default function Home() {
             <div className="px-4 py-4 space-y-4">
               {/* Identity Section */}
               <MetadataSection title="Identity">
+                <MetadataRow label="Worker ID" value={selected.workerId} mono />
                 <MetadataRow label="Video ID" value={selected.videoId} mono />
               </MetadataSection>
 
