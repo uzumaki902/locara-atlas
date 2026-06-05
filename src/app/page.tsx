@@ -3,42 +3,38 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 
-/* ──────────────────────────── Types ──────────────────────────── */
+
 
 interface Video {
   videoId: string;
   workerId: string;
-  workerName: string;
   videoLength: string;
   mainCategory: string;
   taskType: string;
-  status: "Completed" | "In Review" | "Processing" | "Pending";
+  status: "Completed";
   locationEnvironment: string;
   recordingDate: string;
-  videoUrl: string;
   fileSize: string;
   resolution: string;
   frameRate: string;
   audioQuality: string;
   handsVisible: boolean;
   lightingQuality: string;
-  piiCheckStatus: "Passed" | "Pending" | "Flagged";
+  piiCheckStatus: string;
 }
 
-/* ──────────────────────────── Dataset ──────────────────────────── */
+
 
 const videos: Video[] = [
   {
     videoId: "VID-001",
     workerId: "WKR-001",
-    workerName: "Kausar Fatima Sayyed",
     videoLength: "00:05:11",
     mainCategory: "Household Cleaning",
     taskType: "Mopping",
     status: "Completed",
     locationEnvironment: "Indoor — Residential Kitchen",
     recordingDate: "2026-05-15",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Sayyed_Kausar_fatima_ff975fb6_20251765548326102nxpq.mp4",
     fileSize: "245 MB",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -50,14 +46,12 @@ const videos: Video[] = [
   {
     videoId: "VID-004",
     workerId: "WKR-004",
-    workerName: "Mala Shukla",
     videoLength: "00:02:39",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Indoor — Residential Kitchen",
     recordingDate: "2026-05-18",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/aca1baa92ca5469bba4db56ce287cdd1_e8840379_20251766150224225got4.mp4",
     fileSize: "125 MB",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -69,14 +63,12 @@ const videos: Video[] = [
   {
     videoId: "VID-008",
     workerId: "WKR-005",
-    workerName: "Rajeshree Salte",
     videoLength: "00:12:47",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Indoor — Residential Kitchen",
     recordingDate: "2026-05-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Salte_Rajeshree_fdb2a0f8_20251766045356222n3kj.mp4",
     fileSize: "598 MB",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -88,14 +80,12 @@ const videos: Video[] = [
   {
     videoId: "VID-009",
     workerId: "WKR-006",
-    workerName: "Sabinakhatun Siddique",
     videoLength: "00:12:13",
     mainCategory: "Household Cleaning",
     taskType: "Wash Dishes, Cleaning Kitchen, Arranging the Utensils, Hanging Clothes, Multi Tasking",
     status: "Completed",
     locationEnvironment: "Indoor — Residential Kitchen & Yard",
     recordingDate: "2026-05-21",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Siddique_Sabinakhatun_fc143db1_202517655412302220n7y.mp4",
     fileSize: "572 MB",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -107,14 +97,12 @@ const videos: Video[] = [
   {
     videoId: "VID-010",
     workerId: "WKR-007",
-    workerName: "Shahista Shaikh",
     videoLength: "00:02:45",
     mainCategory: "Household Cleaning",
     taskType: "Sweep Floor",
     status: "Completed",
     locationEnvironment: "Indoor — Residential Living Area",
     recordingDate: "2026-05-22",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/e1b1709a7e544e2f921521cfbcada1a0_f4ba594f_20251765647350894tj9a.mp4",
     fileSize: "129 MB",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -126,14 +114,12 @@ const videos: Video[] = [
   {
     videoId: "VID-012",
     workerId: "WKR-012",
-    workerName: "Amina Shaikh",
     videoLength: "00:28:27",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal, Cutting Vegetables",
     status: "Completed",
     locationEnvironment: "urban_1rk",
     recordingDate: "2025-12-19",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/d42761de1abd41158ea291ba0ca668b8_fba51347_20251766117761285437r.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -145,14 +131,12 @@ const videos: Video[] = [
   {
     videoId: "VID-013",
     workerId: "WKR-013",
-    workerName: "Firdous Shahnawaz Mulla",
     videoLength: "00:17:11",
     mainCategory: "Household Cleaning",
     taskType: "Cleaning Kitchen, Arranging the Utensils, Multi Tasking",
     status: "Completed",
     locationEnvironment: "urban_1rk",
     recordingDate: "2025-12-18",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/71dd86b576a74399b980bfc3154abccb_d96a5db1_20251766063825474lc66.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -164,14 +148,12 @@ const videos: Video[] = [
   {
     videoId: "VID-014",
     workerId: "WKR-014",
-    workerName: "Mandakini Morey",
     videoLength: "00:12:44",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Morey_Mandakini_f716e2bd_20251765883893917v531.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -183,14 +165,12 @@ const videos: Video[] = [
   {
     videoId: "VID-015",
     workerId: "WKR-015",
-    workerName: "Mansi Mulam",
     videoLength: "00:10:41",
     mainCategory: "Household Cleaning",
     taskType: "Cleaning toilet bathroom and wash basin",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Mulam_Mansi_ff7c34fd_202517655576042222kd5.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -202,14 +182,12 @@ const videos: Video[] = [
   {
     videoId: "VID-016",
     workerId: "WKR-016",
-    workerName: "Nazreen Khan",
     videoLength: "00:05:04",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Khan_Nazreen_fc2ec5d0_20251765973876811yfgi_30fps.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -221,14 +199,12 @@ const videos: Video[] = [
   {
     videoId: "VID-017",
     workerId: "WKR-017",
-    workerName: "Neha Goruvanthula",
     videoLength: "00:14:21",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Goruvanthula_Neha_fbbf7014_20251765539190367wkf4.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -240,14 +216,12 @@ const videos: Video[] = [
   {
     videoId: "VID-018",
     workerId: "WKR-018",
-    workerName: "Nisha Wavhal",
     videoLength: "00:25:32",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/5368e7763ec544a2aca9d859196b85b4_d97cbd16_20251766063295333n7tn.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -259,14 +233,12 @@ const videos: Video[] = [
   {
     videoId: "VID-019",
     workerId: "WKR-019",
-    workerName: "Poonam Narwade",
     videoLength: "00:01:22",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal, Picking and Cleaning Vegetables",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/0717990aedff4cf59ec22ecba4b2af62_fd73b564_20251765513320254yg05.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -278,14 +250,12 @@ const videos: Video[] = [
   {
     videoId: "VID-020",
     workerId: "WKR-020",
-    workerName: "Poonam Navik",
     videoLength: "00:20:39",
     mainCategory: "Clothing & Laundry",
     taskType: "Washing Cloths",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Navik_2_Poonam_e6e00906_20261769498406058a7wa.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -297,14 +267,12 @@ const videos: Video[] = [
   {
     videoId: "VID-021",
     workerId: "WKR-021",
-    workerName: "Poonam Navik",
     videoLength: "00:20:53",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Navik_2_Poonam_e747fc72_20261769443924671tn8y.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -316,14 +284,12 @@ const videos: Video[] = [
   {
     videoId: "VID-022",
     workerId: "WKR-022",
-    workerName: "Pramila Choudhari",
     videoLength: "00:05:37",
     mainCategory: "Household Cleaning",
     taskType: "Mopping",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/d4097fe5f280482faf41f75c9a933528_d6d282b0_20251766078199714th49.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -335,14 +301,12 @@ const videos: Video[] = [
   {
     videoId: "VID-023",
     workerId: "WKR-023",
-    workerName: "Priyanka Shukala",
     videoLength: "00:04:30",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cutting Vegetables",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/a9ea44afeb374c5594cd5faf1d3d556d_fb90d647_20251765983279935eedu.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -354,14 +318,12 @@ const videos: Video[] = [
   {
     videoId: "VID-024",
     workerId: "WKR-024",
-    workerName: "Reema Shaikh",
     videoLength: "00:09:34",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/7b320bc4837546568a9bff6167946c34_fa551a02_20251766034188637uvte_30fps.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -373,14 +335,12 @@ const videos: Video[] = [
   {
     videoId: "VID-025",
     workerId: "WKR-025",
-    workerName: "Saniya Mirza",
     videoLength: "00:00:22",
     mainCategory: "Household Cleaning",
     taskType: "Mopping",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/mirza_saniya_f8ef9ed1_202517656156259519b5v.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -392,14 +352,12 @@ const videos: Video[] = [
   {
     videoId: "VID-026",
     workerId: "WKR-026",
-    workerName: "Shweta Chaurasiya",
     videoLength: "00:06:43",
     mainCategory: "Water Management",
     taskType: "Filling Water Bottles",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Chaurasiya_Shweta_fae0aad7_20251766040356273qpq5.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -411,14 +369,12 @@ const videos: Video[] = [
   {
     videoId: "VID-027",
     workerId: "WKR-027",
-    workerName: "Subhalaxmi Settiyar",
     videoLength: "00:11:16",
     mainCategory: "Cooking & Food Prep",
     taskType: "Cooking Meal",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Settiyar_Subhalaxmi_e559afb2_20251765948740782sr9q_30fps.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -430,14 +386,12 @@ const videos: Video[] = [
   {
     videoId: "VID-028",
     workerId: "WKR-028",
-    workerName: "Tahseem Shaikh",
     videoLength: "00:09:11",
     mainCategory: "Utensils & Kitchenware",
     taskType: "Wash Dishes",
     status: "Completed",
     locationEnvironment: "Unknown",
     recordingDate: "2025-12-20",
-    videoUrl: "https://ywqqahldudizrocgjdgn.supabase.co/storage/v1/object/public/rani-video-data/task_ee5e7f28-7dbe-4ba5-855d-746faea2077d/Shaikh_Tahseem_ed1d6a2e_20251765783621670hzao.mp4",
     fileSize: "Unknown",
     resolution: "1920×1080",
     frameRate: "30 fps",
@@ -448,7 +402,7 @@ const videos: Video[] = [
   }
 ];
 
-/* ──────────────────────────── Helpers ──────────────────────────── */
+
 
 function statusColor(status: Video["status"]): string {
   switch (status) {
@@ -474,15 +428,11 @@ function piiColor(pii: Video["piiCheckStatus"]): string {
   }
 }
 
-/* ──────────────────────────── Helpers ──────────────────────────── */
 
 function getVideoSource(video: Video): string {
-  // In the future, this will fetch or return a signed URL.
-  // For now, it returns the internal storage reference directly.
-  return video.videoUrl;
+  return `/api/video/${video.videoId}`;
 }
 
-/* ──────────────────────────── Component ──────────────────────────── */
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string>(videos[0].videoId);
@@ -623,7 +573,7 @@ export default function Home() {
       videos.filter((v) => {
         const q = search.toLowerCase();
         const matchesSearch =
-          v.workerName.toLowerCase().includes(q) ||
+          v.workerId.toLowerCase().includes(q) ||
           v.taskType.toLowerCase().includes(q) ||
           v.mainCategory.toLowerCase().includes(q) ||
           v.videoId.toLowerCase().includes(q);
@@ -699,26 +649,28 @@ export default function Home() {
         </div>
         {/* Category Filter */}
         <div className="px-4 pt-4 pb-3">
-          <div 
-            className="flex items-center justify-between cursor-pointer group"
-            onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+          <div
+            className="flex items-center justify-between cursor-pointer lg:cursor-default group"
+            onClick={() => {
+              if (window.innerWidth < 1024) setIsCategoriesExpanded(!isCategoriesExpanded);
+            }}
           >
             <div>
               <h3 className="text-[12px] font-semibold text-text-secondary uppercase tracking-wider mb-1">
                 Categories ({categories.length})
               </h3>
               <p className="text-[14px] font-medium text-foreground">
-                <span className="text-text-secondary font-normal mr-1">Selected:</span> 
+                <span className="text-text-secondary font-normal mr-1">Selected:</span>
                 {activeCategory} ({activeCategory === "All" ? videos.length : videos.filter(v => v.mainCategory === activeCategory).length})
               </p>
             </div>
-            <button className="text-[12px] font-medium text-text-secondary flex items-center gap-1 group-hover:text-foreground transition-colors">
+            <button className="text-[12px] font-medium text-text-secondary flex lg:hidden items-center gap-1 group-hover:text-foreground transition-colors">
               {isCategoriesExpanded ? "▲ Hide Categories" : "▼ Show Categories"}
             </button>
           </div>
-          
-          <div 
-            className={`grid transition-all duration-300 ease-in-out ${
+
+          <div
+            className={`grid transition-all duration-300 ease-in-out lg:grid-rows-[1fr] lg:opacity-100 lg:mt-3 ${
               isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
             }`}
           >
@@ -770,7 +722,7 @@ export default function Home() {
             <input
               id="search-videos"
               type="text"
-              placeholder="Search videos, workers…"
+              placeholder="Search videos, categories, IDs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-8 pr-3 py-[7px] text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
@@ -1004,13 +956,13 @@ export default function Home() {
             </div>
 
             <div className="px-4 py-4 space-y-4">
-              {/* Identity Section */}
+
               <MetadataSection title="Identity">
                 <MetadataRow label="Worker ID" value={selected.workerId} mono />
                 <MetadataRow label="Video ID" value={selected.videoId} mono />
               </MetadataSection>
 
-              {/* Classification Section */}
+
               <MetadataSection title="Classification">
                 <MetadataRow label="Main Category" value={selected.mainCategory} />
                 <MetadataRow label="Task Type" value={selected.taskType} />
@@ -1028,7 +980,7 @@ export default function Home() {
                 />
               </MetadataSection>
 
-              {/* Recording Section */}
+
               <MetadataSection title="Recording">
                 <MetadataRow label="Video Length" value={selected.videoLength} mono />
                 <MetadataRow label="Recording Date" value={selected.recordingDate} />
@@ -1038,7 +990,6 @@ export default function Home() {
                 />
               </MetadataSection>
 
-              {/* Technical Section */}
               <MetadataSection title="Technical">
                 <MetadataRow label="Resolution" value={selected.resolution} mono />
                 <MetadataRow label="Frame Rate" value={selected.frameRate} mono />
@@ -1046,7 +997,7 @@ export default function Home() {
                 <MetadataRow label="Audio Quality" value={selected.audioQuality} />
               </MetadataSection>
 
-              {/* Quality & Compliance Section */}
+
               <MetadataSection title="Quality & Compliance">
                 <MetadataRow
                   label="Hands Visible"
