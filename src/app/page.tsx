@@ -11,7 +11,7 @@ interface Video {
   videoLength: string;
   mainCategory: string;
   taskType: string;
-  status: "Completed";
+  status: "Completed" | "In Review" | "Processing" | "Pending";
   locationEnvironment: string;
   recordingDate: string;
   fileSize: string;
@@ -20,7 +20,7 @@ interface Video {
   audioQuality: string;
   handsVisible: boolean;
   lightingQuality: string;
-  piiCheckStatus: string;
+  piiCheckStatus: "Passed" | "Pending" | "Flagged";
 }
 
 
