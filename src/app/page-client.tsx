@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
+import { logout } from "./actions";
 
 
 
@@ -229,26 +230,43 @@ export default function PageClient({ videos }: { videos: Video[] }) {
   return (
     <div className="flex flex-col md:flex-row min-h-screen md:h-screen overflow-x-hidden md:overflow-hidden bg-background">
       {/* ─── LEFT SIDEBAR ─── */}
-      <aside className="w-full md:w-[250px] lg:w-[320px] md:min-w-[250px] lg:min-w-[320px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background flex-shrink-0">
+      <aside className="w-full md:w-[340px] lg:w-[380px] md:min-w-[340px] lg:min-w-[380px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background flex-shrink-0">
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-border">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.png"
-              alt="Locara Labs"
-              width={32}
-              height={32}
-              className="rounded-md"
-              priority
-            />
-            <div>
-              <h1 className="text-[30px] font-bold text-foreground tracking-tight leading-tight uppercase">
-                Locara Atlas
-              </h1>
-              <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
-                Sample Dataset Explorer
-              </p>
+          {/* Logo + Title row: logo and brand grow naturally; logout anchors to the right */}
+          <div className="flex items-start gap-2">
+
+            {/* Logo + Brand – natural width, never truncated */}
+            <div className="flex items-center gap-3 flex-1">
+              <Image
+                src="/logo.png"
+                alt="Locara Labs"
+                width={32}
+                height={32}
+                className="rounded-md shrink-0"
+                priority
+              />
+              <div>
+                <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight uppercase">
+                  Locara Atlas
+                </h1>
+                <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
+                  Sample Dataset Explorer
+                </p>
+              </div>
             </div>
+
+            {/* Logout – fixed to the right, never competes with the title */}
+            <form action={logout} className="shrink-0 pt-1.5">
+              <button
+                type="submit"
+                className="text-[12px] font-medium text-text-secondary hover:text-foreground hover:bg-surface rounded-md transition-colors px-2 py-1 border border-transparent hover:border-border"
+                title="Log out"
+              >
+                Log Out
+              </button>
+            </form>
+
           </div>
 
           {/* Feature 1: Dataset Overview Cards */}
@@ -274,10 +292,8 @@ export default function PageClient({ videos }: { videos: Video[] }) {
         {/* Category Filter */}
         <div className="px-4 pt-4 pb-3">
           <div
-            className="flex items-center justify-between cursor-pointer lg:cursor-default group"
-            onClick={() => {
-              if (window.innerWidth < 1024) setIsCategoriesExpanded(!isCategoriesExpanded);
-            }}
+            className="flex items-center justify-between cursor-pointer group"
+            onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
           >
             <div>
               <h3 className="text-[12px] font-semibold text-text-secondary uppercase tracking-wider mb-1">
@@ -288,13 +304,22 @@ export default function PageClient({ videos }: { videos: Video[] }) {
                 {activeCategory} ({activeCategory === "All" ? videos.length : videos.filter(v => v.mainCategory === activeCategory).length})
               </p>
             </div>
-            <button className="text-[12px] font-medium text-text-secondary flex lg:hidden items-center gap-1 group-hover:text-foreground transition-colors">
-              {isCategoriesExpanded ? "▲ Hide Categories" : "▼ Show Categories"}
+            <button className="text-[12px] font-medium text-text-secondary flex items-center gap-1 group-hover:text-foreground transition-colors">
+              {isCategoriesExpanded ? "Hide" : "Show"} Categories
+              <svg 
+                className={`w-4 h-4 transition-transform duration-300 ${isCategoriesExpanded ? "rotate-180" : ""}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
 
           <div
-            className={`grid transition-all duration-300 ease-in-out lg:grid-rows-[1fr] lg:opacity-100 lg:mt-3 ${
+            className={`grid transition-all duration-300 ease-in-out ${
               isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
             }`}
           >
