@@ -1,4 +1,4 @@
-import { VIDEO_MAP } from "@/lib/video-map";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(
   request: Request,
@@ -6,15 +6,20 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const video = VIDEO_MAP[id as keyof typeof VIDEO_MAP];
+  const supabase = await createClient();
+  const { data: video, error } = await supabase
+    .from("videos")
+    .select("video_url")
+    .eq("video_id", id)
+    .single();
 
-  if (!video) {
+  if (error || !video || !video.video_url) {
     return Response.json({ error: "Video not found" }, { status: 404 });
   }
 
   const range = request.headers.get("range");
 
-  const supabaseResponse = await fetch(video.videoUrl, {
+  const supabaseResponse = await fetch(video.video_url, {
     headers: range
       ? {
           Range: range,
