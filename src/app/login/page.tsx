@@ -122,7 +122,7 @@ export default function LoginPage() {
 
       {/* ── Footer ── */}
       <p className="mt-6 text-[12px] text-text-secondary/50">
-        Locara Labs · Internal Use Only
+        Locara Labs
       </p>
 
     </div>
