@@ -1,18 +1,49 @@
 import { createClient } from "@/lib/supabase/server";
 import PageClient from "./page-client";
 import { mapDatabaseVideoToFrontend } from "@/lib/db-adapter";
+import { redirect } from "next/navigation";
 
 // Server Component
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ collection?: string }> }) {
+  const resolvedParams = await searchParams;
+  const collectionId = resolvedParams.collection;
+
   const supabase = await createClient();
   
-  // Fetch all videos from the Supabase table
-  const { data, error } = await supabase.from("videos").select("*");
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, organization_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) {
+    redirect("/login");
+  }
+
+  // Redirect clients to collections page if they access root directly
+  if (profile.role === "client" && !collectionId) {
+    redirect("/collections");
+  }
+
+  // Defensively scope all queries to the organization_id regardless of role
+  let query = supabase.from("videos").select("*").eq("organization_id", profile.organization_id);
+
+  // If client and collection is provided, filter down to just that collection
+  if (profile.role === "client" && collectionId) {
+    query = query.eq("collection_id", collectionId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Failed to fetch videos from Supabase:", error);
-    // You could render an error state or throw, 
-    // but we'll safely pass an empty array to prevent a total crash.
+    // safely pass an empty array to prevent a total crash on error
   }
 
   // Map the raw snake_case DB rows to our frontend Video interface
