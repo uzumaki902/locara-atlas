@@ -12,8 +12,8 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   const supabase = await createClient();
-  
-  const { error } = await supabase.auth.signInWithPassword({
+
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -22,5 +22,22 @@ export async function login(prevState: any, formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/");
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", authData.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    await supabase.auth.signOut();
+    return {
+      error: "User profile not found. Please contact your administrator.",
+    };
+  }
+
+  if (profile.role === "admin") {
+    redirect("/admin");
+  } else {
+    redirect("/collections");
+  }
 }
