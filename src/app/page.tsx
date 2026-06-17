@@ -34,9 +34,21 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   // Defensively scope all queries to the organization_id regardless of role
   let query = supabase.from("videos").select("*").eq("organization_id", profile.organization_id);
 
+  let collectionTitle = "";
+
   // If client and collection is provided, filter down to just that collection
   if (profile.role === "client" && collectionId) {
     query = query.eq("collection_id", collectionId);
+
+    const { data: collectionData, error: collectionError } = await supabase
+      .from("collections")
+      .select("title")
+      .eq("id", collectionId)
+      .maybeSingle();
+    
+    if (!collectionError && collectionData) {
+      collectionTitle = collectionData.title;
+    }
   }
 
   const { data, error } = await query;
@@ -49,5 +61,16 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   // Map the raw snake_case DB rows to our frontend Video interface
   const videos = data ? data.map(mapDatabaseVideoToFrontend) : [];
 
-  return <PageClient videos={videos} />;
+  return (
+    <div className="bg-background min-h-screen flex flex-col">
+      {profile.role === "client" && (
+        <div className="px-5 pt-4">
+          <a href="/collections" className="text-sm text-text-secondary hover:text-foreground mb-4 inline-block">
+            ← Back to Collections
+          </a>
+        </div>
+      )}
+      <PageClient videos={videos} role={profile.role} collectionTitle={collectionTitle} />
+    </div>
+  );
 }

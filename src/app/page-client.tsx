@@ -59,7 +59,15 @@ function getVideoSource(video: Video): string {
 }
 
 
-export default function PageClient({ videos }: { videos: Video[] }) {
+export default function PageClient({ 
+  videos, 
+  role, 
+  collectionTitle 
+}: { 
+  videos: Video[], 
+  role?: string, 
+  collectionTitle?: string 
+}) {
   const [selectedId, setSelectedId] = useState<string>(videos[0]?.videoId ?? "");
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
@@ -250,9 +258,16 @@ export default function PageClient({ videos }: { videos: Video[] }) {
                 <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight uppercase">
                   Locara Atlas
                 </h1>
-                <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
-                  Sample Dataset Explorer
-                </p>
+                {role === "client" ? (
+                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5 whitespace-pre-line">
+                    {collectionTitle || "Collection"}<br/>
+                    {videos.length} {videos.length === 1 ? "Video" : "Videos"}
+                  </p>
+                ) : (
+                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
+                    Sample Dataset Explorer
+                  </p>
+                )}
               </div>
             </div>
 
