@@ -1,0 +1,111 @@
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function UsersPage() {
+  const supabase = await createClient();
+  
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (profile?.role !== "admin") {
+    redirect("/collections");
+  }
+
+  // Fetch profiles and organizations separately to prevent potential relation issues
+  const [profilesRes, orgsRes] = await Promise.all([
+    supabase.from("profiles").select("id, full_name, role, organization_id"),
+    supabase.from("organizations").select("id, name")
+  ]);
+
+  console.log("PROFILES RES:", profilesRes);
+  console.log("ORGS RES:", orgsRes);
+
+  const error = profilesRes.error || orgsRes.error;
+
+  const orgMap = new Map(orgsRes.data?.map((org) => [org.id, org.name]) || []);
+
+  const users = (profilesRes.data || []).map((p) => ({
+    ...p,
+    organizationName: orgMap.get(p.organization_id) || "Unknown Organization",
+  }));
+
+  // Sort: Admins first, then by full_name
+  users.sort((a, b) => {
+    if (a.role === "admin" && b.role !== "admin") return -1;
+    if (a.role !== "admin" && b.role === "admin") return 1;
+    return (a.full_name || "").localeCompare(b.full_name || "");
+  });
+
+  return (
+    <div className="max-w-5xl">
+      <header className="mb-8">
+        <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Users</h2>
+        <p className="text-[14px] text-text-secondary mt-1">Manage platform users</p>
+      </header>
+
+      {error ? (
+        <div className="bg-surface border border-red-500/20 rounded-lg p-8 text-center">
+          <p className="text-[14px] font-medium text-red-400">Unable to load users.</p>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="bg-surface border border-border rounded-lg p-8 text-center">
+          <p className="text-[14px] font-medium text-text-secondary">No users found.</p>
+        </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-lg overflow-hidden overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-background/50">
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Organization
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {users.map((u) => (
+                <tr key={u.id} className="hover:bg-background/40 transition-colors">
+                  <td className="px-5 py-3">
+                    <span className="text-[14px] font-medium text-foreground">
+                      {u.full_name || "Unknown User"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span
+                      className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${
+                        u.role === "admin"
+                          ? "bg-purple-500/15 text-purple-400 border border-purple-500/20"
+                          : "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                      }`}
+                    >
+                      {u.role === "admin" ? "Admin" : "Client"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span className="text-[13px] font-medium text-text-secondary">
+                      {u.organizationName}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
