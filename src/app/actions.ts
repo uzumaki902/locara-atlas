@@ -53,8 +53,11 @@ export async function submitDatasetRequest(formData: FormData) {
     });
 
   if (error) {
-    console.error("Dataset Request Error:", error);
-    return { success: false, error: "Failed to submit request. Please try again." };
+    console.log("DATASET REQUEST ERROR:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
   }
 
   revalidatePath("/requests");

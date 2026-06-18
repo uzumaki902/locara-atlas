@@ -67,11 +67,11 @@ export default function RequestForm() {
             className="w-full bg-background border border-border rounded px-4 py-2 text-[14px] text-foreground focus:outline-none focus:border-accent transition-colors appearance-none"
           >
             <option value="">Select Environment</option>
-            <option value="Indoor">Indoor</option>
+            <option value="Urban 1RK">Urban 1RK</option>
+            <option value="Urban 2BHK">Urban 2BHK</option>
+            <option value="Rural">Rural</option>
             <option value="Outdoor">Outdoor</option>
-            <option value="In-car">In-car</option>
-            <option value="Studio">Studio</option>
-            <option value="Virtual">Virtual</option>
+            <option value="Other">Other</option>
           </select>
         </div>
 
