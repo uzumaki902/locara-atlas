@@ -63,3 +63,73 @@ export async function submitDatasetRequest(formData: FormData) {
   revalidatePath("/requests");
   return { success: true };
 }
+
+export async function approveDatasetRequest(requestId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "admin") {
+    return { success: false, error: "Only admins can approve requests." };
+  }
+
+  const { data, error } = await supabase
+    .from("dataset_requests")
+    .update({ status: "Approved" })
+    .eq("id", requestId)
+    .select();
+
+  console.log("UPDATED ROWS:", data);
+  console.log("UPDATE ERROR:", error);
+
+  if (error) {
+    console.log("APPROVE REQUEST ERROR:", error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/admin/requests");
+  revalidatePath("/requests");
+  return { success: true };
+}
+
+export async function rejectDatasetRequest(requestId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || profile.role !== "admin") {
+    return { success: false, error: "Only admins can reject requests." };
+  }
+
+  const { data, error } = await supabase
+    .from("dataset_requests")
+    .update({ status: "Rejected" })
+    .eq("id", requestId)
+    .select();
+
+  console.log("UPDATED ROWS:", data);
+  console.log("UPDATE ERROR:", error);
+
+  if (error) {
+    console.log("REJECT REQUEST ERROR:", error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/admin/requests");
+  revalidatePath("/requests");
+  return { success: true };
+}
