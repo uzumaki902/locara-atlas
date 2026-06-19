@@ -62,9 +62,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   const videos = data ? data.map(mapDatabaseVideoToFrontend) : [];
 
   return (
-    <div className="bg-background min-h-screen flex flex-col">
+    <div className="flex-1 flex flex-col overflow-hidden">
       {profile.role === "client" && (
-        <div className="px-5 pt-4">
+        <div className="px-5 pt-4 flex-shrink-0">
           <a href="/collections" className="text-sm text-text-secondary hover:text-foreground mb-4 inline-block">
             ← Back to Collections
           </a>

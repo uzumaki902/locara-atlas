@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { logout } from "./actions";
+import { logout } from "@/app/actions";
 
 
 

@@ -64,29 +64,9 @@ export default async function RequestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
-      {/* Client Navbar matches established aesthetics */}
-      <nav className="h-[64px] border-b border-border bg-background flex items-center px-6 justify-between flex-shrink-0">
-        <div className="flex items-center gap-6">
-          <Link href="/collections" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="Locara Atlas" width={28} height={28} className="rounded-md" />
-            <span className="text-[16px] font-bold tracking-tight uppercase">Locara Atlas</span>
-          </Link>
-          <div className="h-4 w-px bg-border"></div>
-          <div className="flex items-center gap-4">
-            <Link href="/collections" className="text-[14px] text-text-secondary hover:text-foreground font-medium transition-colors">
-              Collections
-            </Link>
-            <span className="text-[14px] text-foreground font-medium">
-              Requests
-            </span>
-          </div>
-        </div>
-      </nav>
-
-      <main className="flex-1 max-w-4xl w-full mx-auto p-8 overflow-y-auto">
-        <header className="mb-8">
-          <h1 className="text-[32px] font-bold tracking-tight text-foreground">New Dataset Request</h1>
+    <main className="flex-1 max-w-4xl w-full mx-auto p-8 overflow-y-auto">
+      <header className="mb-8">
+        <h1 className="text-[32px] font-bold tracking-tight text-foreground">New Dataset Request</h1>
           <p className="text-[14px] text-text-secondary mt-1">Submit requirements for a new custom dataset.</p>
         </header>
 
@@ -169,7 +149,6 @@ export default async function RequestsPage() {
             </table>
           </div>
         )}
-      </main>
-    </div>
+    </main>
   );
 }

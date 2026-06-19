@@ -44,7 +44,7 @@ export default async function CollectionsPage() {
   const videosData = videos || [];
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-8">
+    <main className="flex-1 p-8 overflow-y-auto">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <h1 className="text-[32px] font-bold tracking-tight text-foreground">Your Collections</h1>
@@ -118,6 +118,6 @@ export default async function CollectionsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
