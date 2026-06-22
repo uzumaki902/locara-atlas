@@ -1,4 +1,4 @@
-import type { Video } from "@/app/page-client";
+import type { Video } from "@/app/(client)/page-client";
 
 export interface DatabaseVideoRow {
   video_id: string;
