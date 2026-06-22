@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { logout } from "@/app/actions";
 
 export default function AdminLayout({
   children,
@@ -51,6 +52,17 @@ export default function AdminLayout({
             </Link>
           ))}
         </nav>
+
+        <div className="p-4 border-t border-border">
+          <form action={logout}>
+            <button
+              type="submit"
+              className="w-full text-center rounded-lg px-3 py-2.5 text-[14px] font-medium text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
+            >
+              Sign Out
+            </button>
+          </form>
+        </div>
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
