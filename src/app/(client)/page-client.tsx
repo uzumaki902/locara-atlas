@@ -240,27 +240,18 @@ export default function PageClient({
       <aside className="w-full md:w-[340px] lg:w-[380px] md:min-w-[340px] lg:min-w-[380px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background flex-shrink-0">
         {/* Header */}
         <div className="px-5 pt-5 pb-4 border-b border-border">
-          {/* Logo + Title row: logo and brand grow naturally; logout anchors to the right */}
-          <div className="flex items-start gap-2">
-
-            {/* Logo + Brand – natural width, never truncated */}
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-
-              <div className="min-w-0">
-
-                {role === "client" ? (
-                  <div className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
-                    <p className="truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
-                    <p>{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
-                  </div>
-                ) : (
-                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5 truncate">
-                    Sample Dataset Explorer
-                  </p>
-                )}
+          {/* Collection Context */}
+          <div className="min-w-0">
+            {role === "client" ? (
+              <div className="text-[14px] font-normal text-text-secondary leading-tight">
+                <p className="truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
+                <p>{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
               </div>
-            </div>
-
+            ) : (
+              <p className="text-[14px] font-normal text-text-secondary leading-tight truncate">
+                Sample Dataset Explorer
+              </p>
+            )}
           </div>
 
           {/* Feature 1: Dataset Overview Cards */}
