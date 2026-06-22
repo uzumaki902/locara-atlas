@@ -17,8 +17,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </div>
         <div>
           <form action={logout}>
-            <button type="submit" className="text-[14px] font-medium text-text-secondary hover:text-foreground transition-colors">
-              Logout
+            <button type="submit" className="text-[14px] font-medium px-3 py-1.5 rounded-md text-red-500 bg-transparent hover:bg-red-500/10 hover:text-red-400 transition-colors">
+              Sign Out
             </button>
           </form>
         </div>

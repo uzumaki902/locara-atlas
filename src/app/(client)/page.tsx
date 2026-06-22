@@ -63,13 +63,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {profile.role === "client" && (
-        <div className="px-5 pt-4 flex-shrink-0">
-          <a href="/collections" className="text-sm text-text-secondary hover:text-foreground mb-4 inline-block">
-            ← Back to Collections
-          </a>
-        </div>
-      )}
+
       <PageClient videos={videos} role={profile.role} collectionTitle={collectionTitle} />
     </div>
   );

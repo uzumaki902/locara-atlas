@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
-import { logout } from "@/app/actions";
 
 
 
@@ -270,17 +269,6 @@ export default function PageClient({
                 )}
               </div>
             </div>
-
-            {/* Logout – fixed to the right, never competes with the title */}
-            <form action={logout} className="shrink-0 pt-1.5">
-              <button
-                type="submit"
-                className="text-[12px] font-medium text-text-secondary hover:text-foreground hover:bg-surface rounded-md transition-colors px-2 py-1 border border-transparent hover:border-border"
-                title="Log out"
-              >
-                Log Out
-              </button>
-            </form>
 
           </div>
 
