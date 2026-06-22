@@ -58,14 +58,14 @@ function getVideoSource(video: Video): string {
 }
 
 
-export default function PageClient({ 
-  videos, 
-  role, 
-  collectionTitle 
-}: { 
-  videos: Video[], 
-  role?: string, 
-  collectionTitle?: string 
+export default function PageClient({
+  videos,
+  role,
+  collectionTitle
+}: {
+  videos: Video[],
+  role?: string,
+  collectionTitle?: string
 }) {
   const [selectedId, setSelectedId] = useState<string>(videos[0]?.videoId ?? "");
   const [search, setSearch] = useState("");
@@ -244,26 +244,17 @@ export default function PageClient({
           <div className="flex items-start gap-2">
 
             {/* Logo + Brand – natural width, never truncated */}
-            <div className="flex items-center gap-3 flex-1">
-              <Image
-                src="/logo.png"
-                alt="Locara Labs"
-                width={32}
-                height={32}
-                className="rounded-md shrink-0"
-                priority
-              />
-              <div>
-                <h1 className="text-[28px] font-bold text-foreground tracking-tight leading-tight uppercase">
-                  Locara Atlas
-                </h1>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+
+              <div className="min-w-0">
+
                 {role === "client" ? (
-                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5 whitespace-pre-line">
-                    {collectionTitle || "Collection"}<br/>
-                    {videos.length} {videos.length === 1 ? "Video" : "Videos"}
-                  </p>
+                  <div className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
+                    <p className="truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
+                    <p>{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
+                  </div>
                 ) : (
-                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5">
+                  <p className="text-[14px] font-normal text-text-secondary leading-tight mt-0.5 truncate">
                     Sample Dataset Explorer
                   </p>
                 )}
@@ -309,11 +300,11 @@ export default function PageClient({
             </div>
             <button className="text-[12px] font-medium text-text-secondary flex items-center gap-1 group-hover:text-foreground transition-colors">
               {isCategoriesExpanded ? "Hide" : "Show"} Categories
-              <svg 
-                className={`w-4 h-4 transition-transform duration-300 ${isCategoriesExpanded ? "rotate-180" : ""}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor" 
+              <svg
+                className={`w-4 h-4 transition-transform duration-300 ${isCategoriesExpanded ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
                 strokeWidth={2}
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -322,9 +313,8 @@ export default function PageClient({
           </div>
 
           <div
-            className={`grid transition-all duration-300 ease-in-out ${
-              isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
-            }`}
+            className={`grid transition-all duration-300 ease-in-out ${isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
+              }`}
           >
             <div className="overflow-hidden">
               <div className="flex gap-1.5 flex-wrap">
@@ -383,7 +373,7 @@ export default function PageClient({
         </div>
 
         {/* Video List */}
-        <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-0.5 max-h-[40vh] md:max-h-none">
+        <div className="flex-1 overflow-y-auto px-3 pb-24 space-y-0.5 max-h-[40vh] md:max-h-none">
           {filtered.length === 0 && (
             <div className="text-center py-16 text-text-secondary text-[12px]">
               No videos match your filters.
@@ -406,8 +396,9 @@ export default function PageClient({
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <span
-                    className={`text-[16px] font-semibold leading-tight ${isActive ? "text-accent" : "text-foreground"
+                    className={`text-[16px] font-semibold leading-tight truncate ${isActive ? "text-accent" : "text-foreground"
                       }`}
+                    title={v.taskType}
                   >
                     {v.taskType}
                   </span>
@@ -415,7 +406,7 @@ export default function PageClient({
                     {v.videoLength}
                   </span>
                 </div>
-                <p className="text-[14px] font-normal text-text-secondary truncate mb-1.5">
+                <p className="text-[14px] font-normal text-text-secondary truncate mb-1.5" title={`Category: ${v.mainCategory}`}>
                   Category: {v.mainCategory}
                 </p>
                 <div className="flex items-center gap-2">
