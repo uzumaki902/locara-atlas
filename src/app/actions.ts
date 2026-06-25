@@ -64,11 +64,11 @@ export async function submitDatasetRequest(formData: FormData) {
   return { success: true };
 }
 
-export async function approveDatasetRequest(requestId: string) {
+export async function approveDatasetRequest(requestId: string, formData?: FormData): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { success: false, error: "Unauthorized" };
+  if (!user) throw new Error("Unauthorized");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -77,7 +77,7 @@ export async function approveDatasetRequest(requestId: string) {
     .single();
 
   if (!profile || profile.role !== "admin") {
-    return { success: false, error: "Only admins can approve requests." };
+    throw new Error("Only admins can approve requests.");
   }
 
   const { data, error } = await supabase
@@ -91,19 +91,18 @@ export async function approveDatasetRequest(requestId: string) {
 
   if (error) {
     console.log("APPROVE REQUEST ERROR:", error);
-    return { success: false, error: error.message };
+    return;
   }
 
   revalidatePath("/admin/requests");
   revalidatePath("/requests");
-  return { success: true };
 }
 
-export async function rejectDatasetRequest(requestId: string) {
+export async function rejectDatasetRequest(requestId: string, formData?: FormData): Promise<void> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) return { success: false, error: "Unauthorized" };
+  if (!user) throw new Error("Unauthorized");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -112,7 +111,7 @@ export async function rejectDatasetRequest(requestId: string) {
     .single();
 
   if (!profile || profile.role !== "admin") {
-    return { success: false, error: "Only admins can reject requests." };
+    throw new Error("Only admins can reject requests.");
   }
 
   const { data, error } = await supabase
@@ -126,10 +125,9 @@ export async function rejectDatasetRequest(requestId: string) {
 
   if (error) {
     console.log("REJECT REQUEST ERROR:", error);
-    return { success: false, error: error.message };
+    return;
   }
 
   revalidatePath("/admin/requests");
   revalidatePath("/requests");
-  return { success: true };
 }

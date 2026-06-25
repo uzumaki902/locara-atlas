@@ -150,8 +150,7 @@ export default async function AdminRequestsPage() {
                     <td className="px-5 py-3 text-right align-middle">
                       {req.status === "Submitted" || req.status === "Pending" ? (
                         <div className="flex items-center justify-end gap-2">
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          <form action={approveDatasetRequest.bind(null, req.id) as any}>
+                          <form action={approveDatasetRequest.bind(null, req.id)}>
                             <button
                               type="submit"
                               className="text-[12px] font-medium px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
@@ -159,8 +158,7 @@ export default async function AdminRequestsPage() {
                               Approve
                             </button>
                           </form>
-                          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                          <form action={rejectDatasetRequest.bind(null, req.id) as any}>
+                          <form action={rejectDatasetRequest.bind(null, req.id)}>
                             <button
                               type="submit"
                               className="text-[12px] font-medium px-3 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
