@@ -198,3 +198,110 @@ export async function toggleCollectionPublish(id: string, currentStatus: boolean
   revalidatePath("/admin/collections");
   return { success: true };
 }
+
+// ─── Videos ───────────────────────────────────────────────────────────────────
+
+export async function createVideo(formData: FormData) {
+  const adminClient = createAdminClient();
+  
+  const video_id = formData.get("video_id") as string;
+  const collection_id = formData.get("collection_id") as string;
+  const video_url = formData.get("video_url") as string;
+  const hands_visible = formData.get("hands_visible") === "true";
+  
+  if (!video_id || !collection_id || !video_url) {
+    return { error: "Video ID, Collection, and Video URL are required" };
+  }
+
+  // Fetch the organization_id from the assigned collection
+  const { data: collectionData, error: collectionError } = await adminClient
+    .from("collections")
+    .select("organization_id")
+    .eq("id", collection_id)
+    .single();
+
+  if (collectionError || !collectionData) {
+    return { error: "Failed to resolve organization for the selected collection" };
+  }
+
+  const { error } = await adminClient.from("videos").insert({
+    video_id,
+    collection_id,
+    organization_id: collectionData.organization_id,
+    video_url,
+    worker_id: formData.get("worker_id") as string || null,
+    task_type: formData.get("task_type") as string || null,
+    video_length: formData.get("video_length") as string || null,
+    recording_date: formData.get("recording_date") as string || null,
+    location_environment: formData.get("location_environment") as string || null,
+    file_size: formData.get("file_size") as string || null,
+    resolution: formData.get("resolution") as string || null,
+    frame_rate: formData.get("frame_rate") as string || null,
+    audio_quality: formData.get("audio_quality") as string || null,
+    lighting_quality: formData.get("lighting_quality") as string || null,
+    pii_check_status: formData.get("pii_check_status") as string || null,
+    status: formData.get("status") as string || "Pending",
+    hands_visible,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function updateVideo(video_id: string, formData: FormData) {
+  const adminClient = createAdminClient();
+  
+  const collection_id = formData.get("collection_id") as string;
+  const video_url = formData.get("video_url") as string;
+  const hands_visible = formData.get("hands_visible") === "true";
+
+  if (!collection_id || !video_url) {
+    return { error: "Collection and Video URL are required" };
+  }
+
+  // Fetch the organization_id from the assigned collection
+  const { data: collectionData, error: collectionError } = await adminClient
+    .from("collections")
+    .select("organization_id")
+    .eq("id", collection_id)
+    .single();
+
+  if (collectionError || !collectionData) {
+    return { error: "Failed to resolve organization for the selected collection" };
+  }
+
+  const { error } = await adminClient.from("videos").update({
+    video_id: formData.get("video_id") as string,
+    collection_id,
+    organization_id: collectionData.organization_id,
+    video_url,
+    worker_id: formData.get("worker_id") as string || null,
+    task_type: formData.get("task_type") as string || null,
+    video_length: formData.get("video_length") as string || null,
+    recording_date: formData.get("recording_date") as string || null,
+    location_environment: formData.get("location_environment") as string || null,
+    file_size: formData.get("file_size") as string || null,
+    resolution: formData.get("resolution") as string || null,
+    frame_rate: formData.get("frame_rate") as string || null,
+    audio_quality: formData.get("audio_quality") as string || null,
+    lighting_quality: formData.get("lighting_quality") as string || null,
+    pii_check_status: formData.get("pii_check_status") as string || null,
+    status: formData.get("status") as string || "Pending",
+    hands_visible,
+  }).eq("video_id", video_id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
+
+export async function deleteVideo(video_id: string) {
+  const adminClient = createAdminClient();
+  const { error } = await adminClient.from("videos").delete().eq("video_id", video_id);
+  if (error) return { error: error.message };
+  revalidatePath("/admin/videos");
+  return { success: true };
+}
