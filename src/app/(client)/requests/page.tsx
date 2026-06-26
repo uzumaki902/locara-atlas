@@ -30,21 +30,27 @@ export default async function RequestsPage() {
     .eq("organization_id", profile.organization_id)
     .order("created_at", { ascending: false });
 
-  // Helper function to render status badges
   const renderStatusBadge = (status: string) => {
     const s = status?.toLowerCase() || "unknown";
     
-    if (s === "approved") {
+    if (s === "approved" || s === "delivered") {
       return (
         <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-          Approved
+          {status}
         </span>
       );
     }
-    if (s === "rejected") {
+    if (s === "closed") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/20">
-          Rejected
+        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
+          Closed
+        </span>
+      );
+    }
+    if (s === "under review") {
+      return (
+        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20">
+          Under Review
         </span>
       );
     }

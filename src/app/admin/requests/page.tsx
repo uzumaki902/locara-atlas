@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { approveDatasetRequest, rejectDatasetRequest } from "@/app/actions";
+import { RequestRowActions } from "./request-form";
 
 export default async function AdminRequestsPage() {
   const supabase = await createClient();
@@ -27,6 +27,11 @@ export default async function AdminRequestsPage() {
     .from("dataset_requests")
     .select(`
       id,
+      task_type,
+      environment,
+      hours_needed,
+      deadline,
+      notes,
       status,
       created_at,
       profiles (full_name),
@@ -38,17 +43,24 @@ export default async function AdminRequestsPage() {
   const renderStatusBadge = (status: string) => {
     const s = status?.toLowerCase() || "unknown";
     
-    if (s === "approved") {
+    if (s === "approved" || s === "delivered") {
       return (
         <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-          Approved
+          {status}
         </span>
       );
     }
-    if (s === "rejected") {
+    if (s === "closed") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-red-500/15 text-red-400 border border-red-500/20">
-          Rejected
+        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
+          Closed
+        </span>
+      );
+    }
+    if (s === "under review") {
+      return (
+        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20">
+          Under Review
         </span>
       );
     }
@@ -60,7 +72,6 @@ export default async function AdminRequestsPage() {
       );
     }
     
-    // Default fallback
     return (
       <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
         {status || "Unknown"}
@@ -69,7 +80,7 @@ export default async function AdminRequestsPage() {
   };
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-6xl">
       <header className="mb-8">
         <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Dataset Requests</h2>
         <p className="text-[14px] text-text-secondary mt-1">Manage dataset provisioning requests</p>
@@ -96,6 +107,15 @@ export default async function AdminRequestsPage() {
                 </th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                   Organization
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Task Type
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Hours
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Deadline
                 </th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                   Status
@@ -136,6 +156,21 @@ export default async function AdminRequestsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3">
+                      <span className="text-[13px] font-medium text-text-secondary">
+                        {req.task_type}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      <span className="text-[13px] font-medium text-text-secondary">
+                        {req.hours_needed}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      <span className="text-[13px] font-medium text-text-secondary">
+                        {req.deadline ? new Date(req.deadline).toLocaleDateString() : "-"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
                       {renderStatusBadge(req.status)}
                     </td>
                     <td className="px-5 py-3">
@@ -148,32 +183,7 @@ export default async function AdminRequestsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right align-middle">
-                      {req.status === "Submitted" || req.status === "Pending" ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <form action={approveDatasetRequest.bind(null, req.id)}>
-                            <button
-                              type="submit"
-                              className="text-[12px] font-medium px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
-                            >
-                              Approve
-                            </button>
-                          </form>
-                          <form action={rejectDatasetRequest.bind(null, req.id)}>
-                            <button
-                              type="submit"
-                              className="text-[12px] font-medium px-3 py-1 rounded bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </form>
-                        </div>
-                      ) : req.status === "Approved" ? (
-                        <span className="text-[12px] font-medium text-text-secondary">Approved</span>
-                      ) : req.status === "Rejected" ? (
-                        <span className="text-[12px] font-medium text-text-secondary">Rejected</span>
-                      ) : (
-                        <span className="text-[12px] font-medium text-text-secondary">-</span>
-                      )}
+                      <RequestRowActions req={req} />
                     </td>
                   </tr>
                 );

@@ -305,3 +305,24 @@ export async function deleteVideo(video_id: string) {
   revalidatePath("/admin/videos");
   return { success: true };
 }
+
+// ─── Dataset Requests ─────────────────────────────────────────────────────────
+
+export async function updateDatasetRequest(id: string, formData: FormData) {
+  const adminClient = createAdminClient();
+  const status = formData.get("status") as string;
+  const notes = formData.get("notes") as string;
+
+  if (!status) return { error: "Status is required" };
+
+  const { error } = await adminClient.from("dataset_requests").update({
+    status,
+    notes: notes || null,
+  }).eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/requests");
+  revalidatePath("/requests"); // Revalidate client side as well
+  return { success: true };
+}
