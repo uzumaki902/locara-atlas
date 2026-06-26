@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { CreateOrgButton, OrgRowActions } from "./org-form";
 
 export default async function OrganizationsPage() {
   const supabase = await createClient();
@@ -22,14 +23,17 @@ export default async function OrganizationsPage() {
 
   const { data: organizations, error } = await supabase
     .from("organizations")
-    .select("id, name, is_active, created_at")
+    .select("id, name, is_active, created_at, logo_url")
     .order("created_at", { ascending: false });
 
   return (
     <div className="max-w-5xl">
-      <header className="mb-8">
-        <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Organizations</h2>
-        <p className="text-[14px] text-text-secondary mt-1">Manage organizations in the platform</p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Organizations</h2>
+          <p className="text-[14px] text-text-secondary mt-1">Manage organizations in the platform</p>
+        </div>
+        <CreateOrgButton />
       </header>
 
       {error ? (
@@ -53,6 +57,9 @@ export default async function OrganizationsPage() {
                 </th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                   Created At
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider text-right">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -83,6 +90,9 @@ export default async function OrganizationsPage() {
                         day: "numeric",
                       })}
                     </span>
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <OrgRowActions org={org} />
                   </td>
                 </tr>
               ))}

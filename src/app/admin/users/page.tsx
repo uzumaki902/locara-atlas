@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { CreateUserButton, UserRowActions } from "./user-form";
 
 export default async function UsersPage() {
   const supabase = await createClient();
@@ -22,12 +23,11 @@ export default async function UsersPage() {
 
   // Fetch profiles and organizations separately to prevent potential relation issues
   const [profilesRes, orgsRes] = await Promise.all([
-    supabase.from("profiles").select("id, full_name, role, organization_id"),
-    supabase.from("organizations").select("id, name")
+    supabase.from("profiles").select("id, full_name, role, organization_id, is_active"),
+    supabase.from("organizations").select("id, name").order("name")
   ]);
 
-  console.log("PROFILES RES:", profilesRes);
-  console.log("ORGS RES:", orgsRes);
+
 
   const error = profilesRes.error || orgsRes.error;
 
@@ -47,9 +47,12 @@ export default async function UsersPage() {
 
   return (
     <div className="max-w-5xl">
-      <header className="mb-8">
-        <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Users</h2>
-        <p className="text-[14px] text-text-secondary mt-1">Manage platform users</p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Users</h2>
+          <p className="text-[14px] text-text-secondary mt-1">Manage platform users</p>
+        </div>
+        <CreateUserButton organizations={orgsRes.data ?? []} />
       </header>
 
       {error ? (
@@ -73,6 +76,12 @@ export default async function UsersPage() {
                 </th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                   Organization
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider text-right">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -99,6 +108,20 @@ export default async function UsersPage() {
                     <span className="text-[13px] font-medium text-text-secondary">
                       {u.organizationName}
                     </span>
+                  </td>
+                  <td className="px-5 py-3">
+                    <span
+                      className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${
+                        u.is_active
+                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
+                          : "bg-zinc-500/15 text-zinc-400 border border-zinc-500/20"
+                      }`}
+                    >
+                      {u.is_active ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <UserRowActions user={u} organizations={orgsRes.data ?? []} />
                   </td>
                 </tr>
               ))}

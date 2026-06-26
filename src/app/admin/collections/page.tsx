@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
+import { CreateCollectionButton, CollectionRowActions } from "./collection-form";
 
 export default async function AdminCollectionsPage() {
   const supabase = await createClient();
@@ -20,12 +22,25 @@ export default async function AdminCollectionsPage() {
     redirect("/collections");
   }
 
+  const adminClient = createAdminClient();
+
+  // Fetch all organizations to pass to the create/edit forms
+  const { data: organizations } = await adminClient
+    .from("organizations")
+    .select("id, name")
+    .order("name");
+  
+  const orgsList = organizations || [];
+
   // 1. Attempt the highly optimized relational query
-  let { data: collections, error } = await supabase
+  let { data: collections, error } = await adminClient
     .from("collections")
     .select(`
       id,
       title,
+      description,
+      cover_image_url,
+      organization_id,
       created_at,
       is_published,
       organizations (name),
@@ -39,9 +54,9 @@ export default async function AdminCollectionsPage() {
     
     // Decoupled approach: fetch all required tables concurrently. Zero N+1 queries.
     const [collectionsRes, videosRes, orgsRes] = await Promise.all([
-      supabase.from("collections").select("id, title, is_published, created_at, organization_id").order("created_at", { ascending: false }),
-      supabase.from("videos").select("collection_id"),
-      supabase.from("organizations").select("id, name")
+      adminClient.from("collections").select("id, title, description, cover_image_url, is_published, created_at, organization_id").order("created_at", { ascending: false }),
+      adminClient.from("videos").select("collection_id"),
+      adminClient.from("organizations").select("id, name")
     ]);
 
     error = collectionsRes.error || videosRes.error || orgsRes.error;
@@ -69,9 +84,12 @@ export default async function AdminCollectionsPage() {
 
   return (
     <div className="max-w-5xl">
-      <header className="mb-8">
-        <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Collections</h2>
-        <p className="text-[14px] text-text-secondary mt-1">Manage dataset collections in the platform</p>
+      <header className="mb-8 flex items-start justify-between">
+        <div>
+          <h2 className="text-[24px] font-semibold text-foreground tracking-tight">Collections</h2>
+          <p className="text-[14px] text-text-secondary mt-1">Manage dataset collections in the platform</p>
+        </div>
+        <CreateCollectionButton organizations={orgsList} />
       </header>
 
       {error ? (
@@ -101,6 +119,9 @@ export default async function AdminCollectionsPage() {
                 </th>
                 <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
                   Created At
+                </th>
+                <th className="px-5 py-3 text-[11px] font-semibold text-text-secondary uppercase tracking-wider text-right">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -149,6 +170,9 @@ export default async function AdminCollectionsPage() {
                           day: "numeric",
                         })}
                       </span>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <CollectionRowActions collection={col} organizations={orgsList} />
                     </td>
                   </tr>
                 );
