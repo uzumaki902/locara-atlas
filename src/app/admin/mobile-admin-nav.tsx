@@ -24,9 +24,7 @@ export default function MobileAdminNav() {
     <div className="md:hidden flex flex-col bg-background border-b border-border">
       <div className="h-[64px] px-6 flex items-center justify-between">
         <Link href="/admin" className="flex items-center gap-3 z-10" onClick={() => setIsOpen(false)}>
-          <div className="w-8 h-8 bg-accent/10 border border-accent/20 rounded-lg flex items-center justify-center">
-            <Image src="/logo.png" alt="Locara Atlas" width={16} height={16} className="rounded-sm" priority />
-          </div>
+          <Image src="/logo.png" alt="Locara Atlas" width={32} height={32} className="rounded-lg shrink-0 shadow-sm" priority />
           <div>
             <h1 className="text-[15px] font-bold text-white tracking-tight leading-tight uppercase">Locara Atlas</h1>
             <p className="text-[10px] font-mono text-accent leading-tight mt-0.5 tracking-widest uppercase">Admin</p>

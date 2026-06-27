@@ -25,9 +25,7 @@ export default function LoginPage() {
         
         {/* Header */}
         <div className="relative z-10 flex items-center gap-4">
-          <div className="w-12 h-12 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-[0_0_15px_rgba(59,156,194,0.2)]">
-            <Image src="/logo.png" alt="Locara" width={24} height={24} className="rounded" priority />
-          </div>
+          <Image src="/logo.png" alt="Locara" width={48} height={48} className="rounded-xl shadow-[0_0_15px_rgba(59,156,194,0.2)] shrink-0" priority />
           <div>
             <h2 className="text-[22px] font-bold text-white tracking-tight uppercase leading-none mb-1">
               Locara <span className="text-accent">Atlas</span>
