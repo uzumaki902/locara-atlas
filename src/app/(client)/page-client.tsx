@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export interface Video {
   videoId: string;
@@ -75,6 +76,8 @@ export default function PageClient({
   const [lightingQualityFilter, setLightingQualityFilter] = useState("All");
   const [handsVisibleFilter, setHandsVisibleFilter] = useState(false);
   const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
+  
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
@@ -268,6 +271,10 @@ export default function PageClient({
   }
 
   if (selectedId && selected) {
+    const relatedVideos = videos
+      .filter((v) => v.videoId !== selectedId && (v.taskType === selected.taskType || v.mainCategory === selected.mainCategory))
+      .slice(0, 6);
+
     // ─── VIDEO DETAIL VIEW ───
     return (
       <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-background">
@@ -418,8 +425,39 @@ export default function PageClient({
               )}
             </div>
 
+            {/* MVP Activity Timeline */}
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2.5">
+                <h3 className="text-[14px] font-bold text-foreground flex items-center gap-2">
+                  <svg className="w-4 h-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" /></svg>
+                  Activity Timeline
+                </h3>
+              </div>
+              <div className="relative group">
+                <div className="h-3.5 w-full bg-surface border border-border rounded-md overflow-hidden flex relative cursor-crosshair shadow-inner">
+                  {/* Generated dummy segmented timeline for demo purposes */}
+                  <div className="h-full bg-slate-500/80 transition-all hover:bg-slate-500 border-r border-black/20" style={{ width: '15%' }} title="Preparation"></div>
+                  <div className="h-full bg-accent/80 transition-all hover:bg-accent border-r border-black/20" style={{ width: '60%' }} title={selected.taskType}></div>
+                  <div className="h-full bg-emerald-500/80 transition-all hover:bg-emerald-500 border-r border-black/20" style={{ width: '25%' }} title="Cleanup"></div>
+                </div>
+                <div className="flex justify-between mt-2 px-1">
+                  <span className="text-[11px] font-mono text-text-secondary">00:00</span>
+                  
+                  <div className="flex gap-2 items-center">
+                    <span className="text-[10px] font-medium text-text-secondary bg-surface border border-border px-1.5 py-0.5 rounded shadow-sm hidden sm:inline-block">Preparation</span>
+                    <svg className="w-3 h-3 text-text-secondary/50 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                    <span className="text-[12px] font-medium text-foreground bg-surface border border-border px-2 py-0.5 rounded shadow-sm border-accent/30">{selected.taskType}</span>
+                    <svg className="w-3 h-3 text-text-secondary/50 hidden sm:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m8.25 4.5 7.5 7.5-7.5 7.5" /></svg>
+                    <span className="text-[10px] font-medium text-text-secondary bg-surface border border-border px-1.5 py-0.5 rounded shadow-sm hidden sm:inline-block">Cleanup</span>
+                  </div>
+
+                  <span className="text-[11px] font-mono text-text-secondary">{selected.videoLength}</span>
+                </div>
+              </div>
+            </div>
+
             {/* Quick stats bar below video */}
-            <div className="flex items-center gap-4 mt-5 flex-wrap">
+            <div className="flex items-center gap-4 mt-6 flex-wrap pb-6 border-b border-border">
               {[
                 { label: "Duration", value: selected.videoLength },
                 { label: "Resolution", value: selected.resolution },
@@ -439,6 +477,40 @@ export default function PageClient({
                 </div>
               ))}
             </div>
+
+            {/* Related Videos */}
+            {relatedVideos.length > 0 && (
+              <div className="mt-6 mb-6">
+                <h3 className="text-[16px] font-bold text-foreground mb-4">More from this Collection</h3>
+                <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
+                  {relatedVideos.map((v) => (
+                    <div 
+                      key={v.videoId} 
+                      onClick={() => handleSelect(v.videoId)}
+                      className="w-[240px] shrink-0 cursor-pointer group snap-start"
+                    >
+                      <div className="relative aspect-video bg-surface rounded-lg overflow-hidden border border-border mb-2">
+                        {v.thumbnailUrl ? (
+                          <img src={v.thumbnailUrl} alt={v.taskType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-surface/50">
+                            <svg className="w-6 h-6 text-text-secondary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <svg className="w-8 h-8 text-white shadow-lg" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                        <div className="absolute bottom-1 right-1">
+                          <span className="bg-black/80 text-white text-[10px] font-mono px-1.5 py-0.5 rounded border border-white/10">{v.videoLength}</span>
+                        </div>
+                      </div>
+                      <h4 className="text-[13px] font-semibold text-foreground truncate group-hover:text-accent transition-colors">{v.taskType}</h4>
+                      <p className="text-[11px] text-text-secondary truncate mt-0.5">{v.mainCategory} • {v.videoId}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ─── METADATA PANEL ─── */}
@@ -519,6 +591,19 @@ export default function PageClient({
                   }
                 />
               </MetadataSection>
+            </div>
+
+            <div className="px-6 pb-6 pt-2 space-y-3">
+
+              <Link
+                href={`/requests?task=${encodeURIComponent(selected.taskType)}&env=${encodeURIComponent(selected.locationEnvironment)}`}
+                className="w-full py-2.5 px-4 bg-accent hover:bg-accent/90 rounded-lg text-[13px] font-semibold text-white transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Request Similar Data
+              </Link>
             </div>
           </aside>
         </div>
@@ -786,6 +871,26 @@ export default function PageClient({
               Showing {filtered.length} {filtered.length === 1 ? 'video' : 'videos'} matching filters
             </p>
           </div>
+          <div className="flex items-center bg-surface border border-border p-1 rounded-lg shadow-sm">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-accent/15 text-accent shadow-sm" : "text-text-secondary hover:text-foreground"}`}
+              aria-label="Grid view"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-accent/15 text-accent shadow-sm" : "text-text-secondary hover:text-foreground"}`}
+              aria-label="List view"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {filtered.length === 0 ? (
@@ -796,7 +901,7 @@ export default function PageClient({
             <p className="text-[16px] font-semibold text-foreground">No videos found</p>
             <p className="text-[14px] text-text-secondary mt-1 max-w-sm">Adjust your search or category filters to find what you're looking for.</p>
           </div>
-        ) : (
+        ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 pb-12">
             {filtered.map((v) => (
               <div
@@ -948,6 +1053,87 @@ export default function PageClient({
                      </div>
                    </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3 pb-12">
+            {filtered.map((v) => (
+              <div
+                key={v.videoId}
+                onClick={() => handleSelect(v.videoId)}
+                className="flex items-center gap-6 bg-surface border border-border rounded-xl p-3 hover:border-accent/40 hover:shadow-lg transition-all cursor-pointer group"
+              >
+                {/* Thumbnail */}
+                <div className="relative w-40 aspect-video rounded-lg overflow-hidden shrink-0 border border-border/50">
+                  {v.thumbnailUrl ? (
+                    <img src={v.thumbnailUrl} alt={v.taskType} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-surface/50">
+                      <svg className="w-6 h-6 text-text-secondary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                      </svg>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-accent text-white flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
+                      <svg className="w-5 h-5 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-1.5 right-1.5 z-20">
+                    <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-mono font-medium px-2 py-[2px] rounded-md border border-white/10 shadow-sm">
+                      {v.videoLength}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Info Columns */}
+                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+                  
+                  {/* Title & Task */}
+                  <div className="flex flex-col gap-1 col-span-2">
+                    <h3 className="text-[15px] font-semibold text-foreground leading-tight truncate group-hover:text-accent transition-colors">
+                      {v.taskType}
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <p className="text-[13px] text-text-secondary truncate">
+                        {v.mainCategory}
+                      </p>
+                      <span className="text-[11px] text-text-secondary font-mono bg-surface border border-border px-1.5 py-0.5 rounded text-text-secondary/70">
+                        {v.videoId.length > 8 ? `${v.videoId.substring(0, 8)}...` : v.videoId}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Environment & Tech */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[13px] text-text-secondary flex items-center gap-1.5 truncate">
+                      <svg className="w-4 h-4 shrink-0 text-text-secondary/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                      </svg>
+                      {v.locationEnvironment.split("_").join(" ")}
+                    </span>
+                    <span className="text-[12px] text-text-secondary font-mono flex items-center gap-2">
+                      {v.resolution} • {v.frameRate}
+                    </span>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm text-white shrink-0 ${
+                      v.piiCheckStatus === "Passed" ? "bg-blue-500" : v.piiCheckStatus === "Flagged" ? "bg-red-500" : "bg-amber-500"
+                    }`}>
+                      {v.piiCheckStatus === "Passed" ? "No PII" : v.piiCheckStatus}
+                    </span>
+                    {v.status === "Completed" && (
+                      <span className="bg-emerald-500 text-white text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm shrink-0">
+                        Verified
+                      </span>
+                    )}
+                  </div>
+                </div>
+
               </div>
             ))}
           </div>
