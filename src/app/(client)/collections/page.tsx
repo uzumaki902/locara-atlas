@@ -116,12 +116,12 @@ export default async function CollectionsPage() {
         })}
 
         {collectionsData.length === 0 && (
-          <div className="col-span-full py-16 text-center bg-surface border border-border rounded-lg border-dashed">
-            <svg className="w-10 h-10 text-text-secondary/30 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <div className="col-span-full border border-dashed border-border rounded-xl bg-surface/30 p-12 flex flex-col items-center justify-center text-center">
+            <svg className="w-10 h-10 text-text-secondary/30 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
             </svg>
-            <p className="text-[14px] font-medium text-text-secondary">No collections assigned yet.</p>
-            <p className="text-[12px] text-text-secondary/60 mt-1">Contact your administrator to get access.</p>
+            <p className="text-[14px] font-medium text-foreground">No collections assigned yet.</p>
+            <p className="text-[13px] text-text-secondary mt-1 max-w-sm">Contact your administrator to get access to datasets.</p>
           </div>
         )}
       </div>

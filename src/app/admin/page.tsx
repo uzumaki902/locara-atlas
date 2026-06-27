@@ -54,7 +54,7 @@ export default async function AdminPage() {
           <a
             key={m.label}
             href={m.href}
-            className="bg-surface border border-border hover:border-border-hover rounded-lg p-5 flex flex-col transition-all duration-150 cursor-pointer"
+            className="bg-surface border border-border rounded-lg p-5 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
           >
             <span className="text-[11px] text-text-secondary uppercase tracking-wider mb-2 font-semibold">
               {m.label}

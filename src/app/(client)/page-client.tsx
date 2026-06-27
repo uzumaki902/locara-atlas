@@ -272,28 +272,28 @@ export default function PageClient({
 
           {/* Feature 1: Dataset Overview Cards */}
           <div className="grid grid-cols-2 gap-2.5 mt-4">
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Videos</span>
               </div>
               <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalVideos}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Categories</span>
               </div>
               <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalCategories}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Approved</span>
               </div>
               <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.approvedVideos}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
               <div className="flex items-center gap-2 mb-1">
                 <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                 <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Footage</span>

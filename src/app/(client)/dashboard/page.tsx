@@ -32,7 +32,7 @@ export default async function ClientDashboardPage() {
   // Fetch collections and videos scoped to this organization (handled by RLS)
   const [collectionsRes, videosRes] = await Promise.all([
     supabase.from("collections").select("id"),
-    supabase.from("videos").select("video_id, task_type, duration_minutes, pii_check_status, created_at, qa_status, resolution, frame_rate").order("created_at", { ascending: false })
+    supabase.from("videos").select("*").order("recording_date", { ascending: false })
   ]);
 
   const collections = collectionsRes.data || [];
@@ -40,12 +40,22 @@ export default async function ClientDashboardPage() {
 
   // Compute Metrics
   const totalVideos = videos.length;
-  const totalDurationMinutes = videos.reduce((acc, v) => acc + (v.duration_minutes || 0), 0);
-  const datasetHours = (totalDurationMinutes / 60).toFixed(1);
+  let totalSeconds = 0;
+  videos.forEach((v) => {
+    if (v.video_length) {
+      const parts = v.video_length.split(":");
+      if (parts.length === 3) {
+        totalSeconds += parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+      } else if (parts.length === 2) {
+        totalSeconds += parseInt(parts[0]) * 60 + parseInt(parts[1]);
+      }
+    }
+  });
+  const datasetHours = (totalSeconds / 3600).toFixed(1);
   const totalCollections = collections.length;
   
-  const piiCleanVideos = videos.filter(v => v.pii_check_status?.toLowerCase().includes("no pii") || v.pii_check_status?.toLowerCase() === "clean").length;
-  const complianceRate = totalVideos > 0 ? Math.round((piiCleanVideos / totalVideos) * 100) : 100;
+  const piiCleanVideos = videos.filter(v => v.pii_check_status?.toLowerCase() === "passed" || v.pii_check_status?.toLowerCase().includes("no pii")).length;
+  const complianceRate = totalVideos > 0 ? Math.round((piiCleanVideos / totalVideos) * 100) : 0;
 
   // Compute Distributions
   const taskCounts: Record<string, number> = {};
@@ -55,7 +65,7 @@ export default async function ClientDashboardPage() {
   videos.forEach(v => {
     // Tasks (can be array or string depending on dirty data)
     const tasks = Array.isArray(v.task_type) ? v.task_type : [v.task_type || "Unknown Task"];
-    tasks.forEach(t => {
+    tasks.forEach((t: string) => {
       if (t) taskCounts[t] = (taskCounts[t] || 0) + 1;
     });
     
@@ -154,11 +164,12 @@ export default async function ClientDashboardPage() {
             <div className="bg-surface border border-border rounded-xl p-6">
               <h2 className="text-[14px] font-semibold text-foreground tracking-tight mb-5">Task Distribution</h2>
               {taskDistribution.length === 0 ? (
-                <div className="py-10 text-center text-text-secondary text-[13px] border border-dashed border-border rounded-lg bg-background/50">
-                  <svg className="w-8 h-8 mx-auto mb-2 text-text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3 13h2.667L7 8h4.667L13 16h4.667L19 11h2" />
+                <div className="border border-dashed border-border rounded-xl bg-surface/30 p-12 flex flex-col items-center justify-center text-center">
+                  <svg className="w-8 h-8 text-text-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13h2.667L7 8h4.667L13 16h4.667L19 11h2" />
                   </svg>
-                  No task data available
+                  <p className="text-[13px] font-medium text-foreground">No task data available</p>
+                  <p className="text-[12px] text-text-secondary mt-1 max-w-xs">Upload videos to see a breakdown of tasks.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -184,11 +195,12 @@ export default async function ClientDashboardPage() {
               </div>
               
               {recentlyAdded.length === 0 ? (
-                <div className="py-12 text-center text-text-secondary text-[13px] bg-background/30">
-                  <svg className="w-8 h-8 mx-auto mb-2 text-text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <div className="border border-dashed border-border rounded-xl bg-surface/30 m-6 p-12 flex flex-col items-center justify-center text-center">
+                  <svg className="w-8 h-8 text-text-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  No videos added yet
+                  <p className="text-[13px] font-medium text-foreground">No videos added yet</p>
+                  <p className="text-[12px] text-text-secondary mt-1">New footage will appear here.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -207,7 +219,7 @@ export default async function ClientDashboardPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right w-24">
-                            {renderStatusBadge(video.qa_status)}
+                            {renderStatusBadge(video.status)}
                           </td>
                         </tr>
                       ))}
