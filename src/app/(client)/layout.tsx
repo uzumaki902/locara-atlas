@@ -1,5 +1,6 @@
 import { logout } from "@/app/actions";
 import ClientNav from "./client-nav";
+import MobileNav from "./mobile-nav";
 import Image from "next/image";
 import Link from "next/link";
 import { LogOut } from "lucide-react";
@@ -12,10 +13,10 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           <Image src="/logo.png" alt="Locara Atlas" width={28} height={28} className="rounded-md" />
           <span className="text-[16px] font-bold tracking-tight uppercase">Locara Atlas</span>
         </Link>
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2 hidden md:block">
           <ClientNav />
         </div>
-        <div className="z-10">
+        <div className="z-10 hidden md:block">
           <form action={logout}>
             <button type="submit" className="group flex items-center justify-center gap-2 text-[14px] font-medium px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-500 transition-colors shadow-sm">
               <LogOut className="w-4 h-4 text-white/90 group-hover:text-white transition-colors" />
@@ -23,6 +24,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             </button>
           </form>
         </div>
+        <MobileNav />
       </nav>
       {/* Allows children to stretch or scroll independently */}
       <div className="flex-1 flex flex-col overflow-hidden">

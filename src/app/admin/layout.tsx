@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { logout } from "@/app/actions";
 import { LayoutDashboard, Building2, Users, Grid, Video, FileText, LogOut } from "lucide-react";
+import MobileAdminNav from "./mobile-admin-nav";
 
 export default function AdminLayout({
   children,
@@ -19,8 +20,10 @@ export default function AdminLayout({
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
+      <MobileAdminNav />
+      
       {/* ─── LEFT SIDEBAR ─── */}
-      <aside className="w-full md:w-[280px] lg:w-[320px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-surface/30 flex-shrink-0">
+      <aside className="hidden md:flex w-[280px] lg:w-[320px] flex-col border-r border-border bg-surface/30 flex-shrink-0 sticky top-0 h-screen">
         <div className="px-6 pt-8 pb-6 border-b border-white/5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-center">

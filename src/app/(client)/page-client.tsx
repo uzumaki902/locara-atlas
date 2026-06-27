@@ -62,6 +62,7 @@ export default function PageClient({
   collectionTitle?: string
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   
   // Base filters
   const [search, setSearch] = useState("");
@@ -615,8 +616,16 @@ export default function PageClient({
   return (
     <div className="flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden bg-background">
       {/* ─── LEFT SIDEBAR (Filters) ─── */}
-      <aside className="w-full md:w-[280px] lg:w-[320px] md:min-w-[280px] lg:min-w-[320px] flex flex-col border-r border-border bg-background flex-shrink-0 overflow-y-auto">
-        <div className="px-5 pt-5 pb-5 border-b border-border bg-surface/30">
+      <aside className={`w-full md:w-[280px] lg:w-[320px] md:min-w-[280px] lg:min-w-[320px] flex-col border-r border-border bg-background flex-shrink-0 overflow-y-auto ${isMobileFiltersOpen ? 'fixed inset-0 top-[64px] z-50 flex' : 'hidden md:flex'}`}>
+        <div className="px-5 pt-5 pb-5 border-b border-border bg-surface/30 relative">
+          <button
+            onClick={() => setIsMobileFiltersOpen(false)}
+            className="md:hidden absolute top-4 right-4 p-1.5 bg-background border border-border rounded-md text-text-secondary hover:text-foreground shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
           <div className="min-w-0">
             {role === "client" ? (
               <div className="leading-tight">
@@ -871,7 +880,17 @@ export default function PageClient({
               Showing {filtered.length} {filtered.length === 1 ? 'video' : 'videos'} matching filters
             </p>
           </div>
-          <div className="flex items-center bg-surface border border-border p-1 rounded-lg shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileFiltersOpen(true)}
+              className="md:hidden flex items-center gap-2 px-3 py-1.5 bg-surface border border-border rounded-lg text-[13px] font-medium text-foreground shadow-sm"
+            >
+              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0H4.5m4.5 12h9.75M10.5 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0H4.5m4.5-6h-9.75M15 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0h9.75" />
+              </svg>
+              Filters
+            </button>
+            <div className="flex items-center bg-surface border border-border p-1 rounded-lg shadow-sm">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-accent/15 text-accent shadow-sm" : "text-text-secondary hover:text-foreground"}`}
@@ -890,6 +909,7 @@ export default function PageClient({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
             </button>
+          </div>
           </div>
         </div>
 
