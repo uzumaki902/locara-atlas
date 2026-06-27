@@ -24,10 +24,12 @@ export default async function CollectionsPage() {
     redirect("/admin");
   }
 
-  // 1. Fetch collections for this organization (Unrestricted query for debugging)
+  // 1. Fetch collections for this organization
   const { data, error } = await supabase
     .from("collections")
-    .select("*");
+    .select("*")
+    .eq("organization_id", profile.organization_id)
+    .eq("is_published", true);
 
   const collections = data;
   const collectionsError = error;
@@ -35,7 +37,8 @@ export default async function CollectionsPage() {
   // 2. Fetch all videos for this organization to calculate counts in-memory
   const { data: videos } = await supabase
     .from("videos")
-    .select("collection_id");
+    .select("collection_id")
+    .eq("organization_id", profile.organization_id);
 
 
 
