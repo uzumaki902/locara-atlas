@@ -41,15 +41,15 @@ export default async function AdminVideosPage() {
     .order("recording_date", { ascending: false });
 
   function piiColor(status: string) {
-    if (status === "Passed") return "text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
-    if (status === "Flagged") return "text-red-400 bg-red-500/10 px-2 py-0.5 rounded";
-    return "text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+    if (status === "Passed") return "text-white bg-blue-500 px-2 py-0.5 rounded";
+    if (status === "Flagged") return "text-white bg-red-500 px-2 py-0.5 rounded";
+    return "text-white bg-amber-500 px-2 py-0.5 rounded";
   }
 
   function qaColor(status: string) {
-    if (status === "Verified") return "text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
-    if (status === "Rejected") return "text-red-400 bg-red-500/10 px-2 py-0.5 rounded";
-    return "text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+    if (status === "Verified") return "text-white bg-emerald-500 px-2 py-0.5 rounded";
+    if (status === "Rejected") return "text-white bg-red-500 px-2 py-0.5 rounded";
+    return "text-white bg-amber-500 px-2 py-0.5 rounded";
   }
 
   return (

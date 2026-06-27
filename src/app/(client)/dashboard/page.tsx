@@ -92,12 +92,12 @@ export default async function ClientDashboardPage() {
   const renderStatusBadge = (status: string) => {
     const s = (status || "").toLowerCase();
     if (s === "approved" || s === "verified") {
-      return <span className="px-2 py-[2px] rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Verified</span>;
+      return <span className="px-2 py-[2px] rounded-md text-[11px] font-medium bg-emerald-500 text-white">Verified</span>;
     }
     if (s === "pending") {
-      return <span className="px-2 py-[2px] rounded text-[11px] font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20">Pending</span>;
+      return <span className="px-2 py-[2px] rounded-md text-[11px] font-medium bg-amber-500 text-white">Pending</span>;
     }
-    return <span className="px-2 py-[2px] rounded text-[11px] font-medium bg-surface text-text-secondary border border-border">{status || "Unknown"}</span>;
+    return <span className="px-2 py-[2px] rounded-md text-[11px] font-medium bg-zinc-500 text-white">{status || "Unknown"}</span>;
   };
 
   return (

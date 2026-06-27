@@ -16,6 +16,7 @@ export interface DatabaseVideoRow {
   hands_visible: boolean | null;
   lighting_quality: string;
   pii_check_status: string;
+  thumbnail_url?: string;
 }
 
 export function mapDatabaseVideoToFrontend(row: DatabaseVideoRow): Video {
@@ -41,5 +42,6 @@ export function mapDatabaseVideoToFrontend(row: DatabaseVideoRow): Video {
     handsVisible: isHandsVisible,
     lightingQuality: isLightingGood ? "Good" : "Poor",
     piiCheckStatus: isPiiPassed ? "Passed" : "Flagged",
+    thumbnailUrl: row.thumbnail_url || "",
   };
 }

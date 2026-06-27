@@ -14,7 +14,7 @@ export default function ClientNav() {
   const pathname = usePathname();
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-4">
       {navigation.map((item) => {
         const active =
           item.href === "/"

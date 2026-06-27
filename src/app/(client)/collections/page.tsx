@@ -91,7 +91,7 @@ export default async function CollectionsPage() {
                     {collection.title}
                   </h2>
                   {collection.is_published && (
-                    <span className="px-2 py-[2px] rounded text-[11px] font-medium bg-green-500/10 text-green-500 border border-green-500/20 shrink-0">
+                    <span className="px-2 py-[2px] rounded-md text-[11px] font-medium bg-emerald-500 text-white shrink-0">
                       Published
                     </span>
                   )}

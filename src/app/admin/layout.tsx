@@ -57,7 +57,7 @@ export default function AdminLayout({
           <form action={logout}>
             <button
               type="submit"
-              className="w-full text-left rounded-lg px-3 py-2.5 text-[14px] font-medium text-red-500 bg-transparent hover:bg-red-500/10 hover:text-red-400 transition-colors"
+              className="w-full text-center rounded-lg px-3 py-2.5 text-[14px] font-medium bg-red-600 text-white hover:bg-red-500 transition-colors shadow-sm"
             >
               Sign Out
             </button>

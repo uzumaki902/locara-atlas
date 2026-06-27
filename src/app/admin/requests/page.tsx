@@ -45,36 +45,36 @@ export default async function AdminRequestsPage() {
     
     if (s === "approved" || s === "delivered") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-          {status}
+        <span className="inline-flex px-2.5 py-1 rounded-md text-[12px] font-medium bg-emerald-500 text-white shadow-sm">
+          <span className="capitalize">{status}</span>
         </span>
       );
     }
-    if (s === "closed") {
+    if (s === "closed" || s === "rejected") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
-          Closed
+        <span className="inline-flex px-2.5 py-1 rounded-md text-[12px] font-medium bg-red-500 text-white shadow-sm">
+          <span className="capitalize">{status}</span>
         </span>
       );
     }
     if (s === "under review") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20">
-          Under Review
+        <span className="inline-flex px-2.5 py-1 rounded-md text-[12px] font-medium bg-blue-500 text-white shadow-sm">
+          <span className="capitalize">Under Review</span>
         </span>
       );
     }
     if (s === "pending" || s === "submitted") {
       return (
-        <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/20">
-          {status}
+        <span className="inline-flex px-2.5 py-1 rounded-md text-[12px] font-medium bg-amber-500 text-white shadow-sm">
+          <span className="capitalize">{status}</span>
         </span>
       );
     }
     
     return (
-      <span className="inline-flex text-[11px] font-medium px-2 py-0.5 rounded bg-zinc-500/15 text-zinc-400 border border-zinc-500/20">
-        {status || "Unknown"}
+      <span className="inline-flex px-2.5 py-1 rounded-md text-[12px] font-medium bg-zinc-500 text-white shadow-sm">
+        <span className="capitalize">{status || "Unknown"}</span>
       </span>
     );
   };

@@ -97,8 +97,8 @@ export default async function UsersPage() {
                     <span
                       className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${
                         u.role === "admin"
-                          ? "bg-purple-500/15 text-purple-400 border border-purple-500/20"
-                          : "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                          ? "bg-purple-500 text-white"
+                          : "bg-blue-500 text-white"
                       }`}
                     >
                       {u.role === "admin" ? "Admin" : "Client"}
@@ -113,8 +113,8 @@ export default async function UsersPage() {
                     <span
                       className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${
                         u.is_active
-                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                          : "bg-zinc-500/15 text-zinc-400 border border-zinc-500/20"
+                          ? "bg-emerald-500 text-white"
+                          : "bg-zinc-500 text-white"
                       }`}
                     >
                       {u.is_active ? "Active" : "Inactive"}

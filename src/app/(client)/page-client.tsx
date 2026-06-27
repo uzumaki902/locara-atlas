@@ -3,8 +3,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Image from "next/image";
 
-
-
 export interface Video {
   videoId: string;
   workerId: string;
@@ -21,42 +19,37 @@ export interface Video {
   handsVisible: boolean;
   lightingQuality: string;
   piiCheckStatus: "Passed" | "Pending" | "Flagged";
+  thumbnailUrl?: string;
 }
-
-
-
-
-
 
 function statusColor(status: Video["status"]): string {
   switch (status) {
     case "Completed":
-      return "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20";
+      return "bg-emerald-500 text-white border-transparent";
     case "In Review":
-      return "bg-amber-500/15 text-amber-400 border border-amber-500/20";
+      return "bg-amber-500 text-white border-transparent";
     case "Processing":
-      return "bg-blue-500/15 text-blue-400 border border-blue-500/20";
+      return "bg-blue-500 text-white border-transparent";
     case "Pending":
-      return "bg-zinc-500/15 text-zinc-400 border border-zinc-500/20";
+      return "bg-zinc-500 text-white border-transparent";
   }
 }
 
 function piiColor(pii: Video["piiCheckStatus"]): string {
   switch (pii) {
     case "Passed":
-      return "text-emerald-400";
+      return "text-blue-500";
     case "Pending":
-      return "text-amber-400";
+      return "text-amber-500";
     case "Flagged":
-      return "text-red-400";
+      return "text-red-500";
   }
 }
 
-
-function getVideoSource(video: Video): string {
+function getVideoSource(video: Video | undefined): string {
+  if (!video) return "";
   return `/api/video/${video.videoId}`;
 }
-
 
 export default function PageClient({
   videos,
@@ -67,10 +60,22 @@ export default function PageClient({
   role?: string,
   collectionTitle?: string
 }) {
-  const [selectedId, setSelectedId] = useState<string>(videos[0]?.videoId ?? "");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  
+  // Base filters
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(false);
+  const [isCategoriesExpanded, setIsCategoriesExpanded] = useState(true);
+  
+  // Advanced filters from PRD
+  const [frameRateFilter, setFrameRateFilter] = useState("All");
+  const [resolutionFilter, setResolutionFilter] = useState("All");
+  const [audioQualityFilter, setAudioQualityFilter] = useState("All");
+  const [piiStatusFilter, setPiiStatusFilter] = useState("All");
+  const [lightingQualityFilter, setLightingQualityFilter] = useState("All");
+  const [handsVisibleFilter, setHandsVisibleFilter] = useState(false);
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -196,7 +201,7 @@ export default function PageClient({
   }, [videos]);
 
   const selected = useMemo(
-    () => videos.find((v) => v.videoId === selectedId) ?? videos[0],
+    () => videos.find((v) => v.videoId === selectedId),
     [selectedId, videos]
   );
 
@@ -211,13 +216,25 @@ export default function PageClient({
           v.videoId.toLowerCase().includes(q);
         const matchesCategory =
           activeCategory === "All" || v.mainCategory === activeCategory;
-        return matchesSearch && matchesCategory;
+          
+        const matchesFrameRate = frameRateFilter === "All" || v.frameRate === frameRateFilter;
+        const matchesResolution = resolutionFilter === "All" || v.resolution === resolutionFilter;
+        const matchesAudioQuality = audioQualityFilter === "All" || v.audioQuality === audioQualityFilter;
+        
+        let matchesPii = true;
+        if (piiStatusFilter === "No PII") matchesPii = v.piiCheckStatus === "Passed";
+        if (piiStatusFilter === "Blurred Required") matchesPii = v.piiCheckStatus !== "Passed";
+        
+        const matchesLighting = lightingQualityFilter === "All" || v.lightingQuality === lightingQualityFilter;
+        const matchesHands = !handsVisibleFilter || v.handsVisible === true;
+
+        return matchesSearch && matchesCategory && matchesFrameRate && matchesResolution && matchesAudioQuality && matchesPii && matchesLighting && matchesHands;
       }),
-    [search, activeCategory, videos]
+    [search, activeCategory, frameRateFilter, resolutionFilter, audioQualityFilter, piiStatusFilter, lightingQualityFilter, handsVisibleFilter, videos]
   );
 
   useEffect(() => {
-    if (videoRef.current) {
+    if (selectedId && videoRef.current) {
       videoRef.current.load();
       setProgress(0);
     }
@@ -250,223 +267,38 @@ export default function PageClient({
     );
   }
 
-  return (
-    <div className="flex flex-col md:flex-row min-h-screen md:h-screen overflow-x-hidden md:overflow-hidden bg-background">
-      {/* ─── LEFT SIDEBAR ─── */}
-      <aside className="w-full md:w-[340px] lg:w-[380px] md:min-w-[340px] lg:min-w-[380px] flex flex-col border-b md:border-b-0 md:border-r border-border bg-background flex-shrink-0">
-        {/* Header */}
-        <div className="px-5 pt-5 pb-4 border-b border-border">
-          {/* Collection Context */}
-          <div className="min-w-0">
-            {role === "client" ? (
-              <div className="leading-tight">
-                <p className="text-[15px] font-semibold text-foreground truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
-                <p className="text-[13px] font-normal text-text-secondary mt-0.5">{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
-              </div>
-            ) : (
-              <p className="text-[14px] font-normal text-text-secondary leading-tight truncate">
-                Sample Dataset Explorer
-              </p>
-            )}
-          </div>
-
-          {/* Feature 1: Dataset Overview Cards */}
-          <div className="grid grid-cols-2 gap-2.5 mt-4">
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-1">
-                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Videos</span>
-              </div>
-              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalVideos}</span>
-            </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-1">
-                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Categories</span>
-              </div>
-              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalCategories}</span>
-            </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-1">
-                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Approved</span>
-              </div>
-              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.approvedVideos}</span>
-            </div>
-            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 hover:-translate-y-0.5 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-1">
-                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Footage</span>
-              </div>
-              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.durationStr}</span>
-            </div>
-          </div>
-        </div>
-        {/* Category Filter */}
-        <div className="px-4 pt-4 pb-3">
-          <div
-            className="flex items-center justify-between cursor-pointer group"
-            onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
-          >
-            <div>
-              <h3 className="text-[12px] font-semibold text-text-secondary uppercase tracking-wider mb-1">
-                Categories ({categories.length})
-              </h3>
-              <p className="text-[14px] font-medium text-foreground">
-                <span className="text-text-secondary font-normal mr-1">Selected:</span>
-                {activeCategory} ({activeCategory === "All" ? videos.length : videos.filter(v => v.mainCategory === activeCategory).length})
-              </p>
-            </div>
-            <button className="text-[12px] font-medium text-text-secondary flex items-center gap-1 group-hover:text-foreground transition-colors">
-              {isCategoriesExpanded ? "Hide" : "Show"} Categories
-              <svg
-                className={`w-4 h-4 transition-transform duration-300 ${isCategoriesExpanded ? "rotate-180" : ""}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-
-          <div
-            className={`grid transition-all duration-300 ease-in-out ${isCategoriesExpanded ? "grid-rows-[1fr] opacity-100 mt-3" : "grid-rows-[0fr] opacity-0"
-              }`}
-          >
-            <div className="overflow-hidden">
-              <div className="flex gap-1.5 flex-wrap">
-                {categories.map((cat) => {
-                  const isActive = cat === activeCategory;
-                  const count =
-                    cat === "All"
-                      ? videos.length
-                      : videos.filter((v) => v.mainCategory === cat).length;
-                  return (
-                    <button
-                      key={cat}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveCategory(cat);
-                      }}
-                      className={`
-                        text-[13px] font-medium px-3 py-1 rounded-md transition-all duration-150 cursor-pointer
-                        ${isActive
-                          ? "bg-accent/15 text-accent border border-accent/25"
-                          : "bg-surface text-text-secondary border border-border hover:border-border-hover hover:text-foreground/70"
-                        }
-                      `}
-                    >
-                      {cat} ({count})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-secondary pointer-events-none"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
-            </svg>
-            <input
-              id="search-videos"
-              type="text"
-              placeholder="Search videos, categories, IDs..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
-            />
-          </div>
-        </div>
-
-        {/* Video List */}
-        <div className="flex-1 overflow-y-auto px-3 pb-24 space-y-0.5 max-h-[40vh] md:max-h-none">
-          {filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <svg className="w-8 h-8 text-text-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-              </svg>
-              <p className="text-[13px] font-medium text-text-secondary">No videos match your filters.</p>
-              <p className="text-[12px] text-text-secondary/60 mt-1">Try adjusting your search or category.</p>
-            </div>
-          )}
-          {filtered.map((v) => {
-            const isActive = v.videoId === selectedId;
-            return (
-              <button
-                key={v.videoId}
-                id={`video-card-${v.videoId}`}
-                onClick={() => handleSelect(v.videoId)}
-                className={`
-                  w-full text-left rounded-lg px-3 py-2.5 transition-all duration-150 cursor-pointer
-                  ${isActive
-                    ? "bg-accent/10 border border-accent/30 shadow-sm shadow-accent/5"
-                    : "bg-transparent border border-transparent hover:bg-surface/50"
-                  }
-                `}
-              >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <span
-                    className={`text-[16px] font-semibold leading-tight truncate ${isActive ? "text-accent" : "text-foreground"
-                      }`}
-                    title={v.taskType}
-                  >
-                    {v.taskType}
-                  </span>
-                  <span className="text-[12px] font-medium font-mono text-text-secondary flex-shrink-0 mt-0.5">
-                    {v.videoLength}
-                  </span>
-                </div>
-                <p className="text-[14px] font-normal text-text-secondary truncate mb-1.5" title={`Category: ${v.mainCategory}`}>
-                  Category: {v.mainCategory}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${statusColor(
-                      v.status
-                    )}`}
-                  >
-                    {v.status}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </aside>
-
-      {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 flex flex-col min-w-0 md:overflow-hidden">
+  if (selectedId && selected) {
+    // ─── VIDEO DETAIL VIEW ───
+    return (
+      <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-background">
         {/* Top bar */}
-        <header className="h-14 min-h-[56px] flex items-center justify-between px-5 border-b border-border bg-background/90 backdrop-blur-sm">
-          <div className="flex items-center gap-3 min-w-0">
+        <header className="h-16 min-h-[64px] flex items-center justify-between px-6 border-b border-border bg-background shrink-0">
+          <div className="flex items-center gap-5 min-w-0">
+            <button 
+              onClick={() => setSelectedId(null)}
+              className="flex items-center gap-2 text-[14px] font-medium px-3 py-1.5 rounded-lg text-text-secondary hover:text-foreground hover:bg-surface border border-transparent hover:border-border transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+              </svg>
+              Back to Explorer
+            </button>
+            <div className="h-5 w-px bg-border"></div>
             <div className="min-w-0">
-              <h2 className="text-[20px] font-semibold text-foreground truncate">
+              <h2 className="text-[18px] font-semibold text-foreground truncate">
                 {selected.taskType}
               </h2>
-              <p className="text-[14px] font-normal text-text-secondary">
+              <p className="text-[13px] font-normal text-text-secondary mt-0.5">
                 {selected.mainCategory} · {selected.videoId}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] font-medium text-text-secondary mr-2">
+          <div className="flex items-center gap-3">
+            <span className="text-[12px] font-medium text-text-secondary">
               {selected.mainCategory}
             </span>
             <span
-              className={`text-[11px] font-medium px-2 py-[3px] rounded ${statusColor(
+              className={`text-[12px] font-medium px-2.5 py-[3px] rounded-md ${statusColor(
                 selected.status
               )}`}
             >
@@ -476,10 +308,10 @@ export default function PageClient({
         </header>
 
         {/* Player + Metadata */}
-        <div className="flex-1 flex flex-col lg:flex-row lg:overflow-hidden">
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Video Player Area */}
-          <div className="flex-1 flex flex-col min-w-0 p-4">
-            <div ref={videoContainerRef} className="relative w-full aspect-video lg:aspect-auto rounded-lg overflow-hidden bg-black/50 border border-border flex-1 flex items-center justify-center group">
+          <div className="flex-1 flex flex-col min-w-0 p-6 overflow-y-auto bg-surface/10">
+            <div ref={videoContainerRef} className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-border shadow-2xl flex items-center justify-center group flex-shrink-0">
               {getVideoSource(selected) ? (
                 <>
                   <video
@@ -503,32 +335,32 @@ export default function PageClient({
                   </video>
 
                   {/* Custom Controls Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] text-white font-mono w-10 text-right">{formatTime(progress)}</span>
+                  <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-[12px] text-white font-mono w-12 text-right">{formatTime(progress)}</span>
                         <input
                           type="range"
                           min="0"
                           max={duration || 100}
                           value={progress}
                           onChange={handleSeek}
-                          className="flex-1 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
+                          className="flex-1 h-1.5 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
                           aria-label="Seek video"
                         />
-                      <span className="text-[10px] text-white font-mono w-10">{formatTime(duration)}</span>
+                      <span className="text-[12px] text-white font-mono w-12">{formatTime(duration)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-5">
                         <button onClick={togglePlay} className="text-white hover:text-white/70 transition-colors" aria-label={isPlaying ? "Pause video" : "Play video"}>
                           {isPlaying ? (
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
                           ) : (
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                           )}
                         </button>
 
-                        <div className="flex items-center gap-2 relative">
+                        <div className="flex items-center gap-3 relative">
                           <button onClick={toggleMute} className="text-white hover:text-white/70 transition-colors" aria-label={isMuted || volume === 0 ? "Unmute video" : "Mute video"}>
                             {isMuted || volume === 0 ? (
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
@@ -543,14 +375,14 @@ export default function PageClient({
                               step="0.05"
                               value={isMuted ? 0 : volume}
                               onChange={handleVolumeChange}
-                              className="w-16 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
+                              className="w-20 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
                               aria-label="Volume"
                             />
                         </div>
                       </div>
 
                       <button onClick={toggleFullscreen} className="text-white hover:text-white/70 transition-colors" aria-label="Toggle fullscreen">
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
                         </svg>
                       </button>
@@ -558,10 +390,10 @@ export default function PageClient({
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-                  <div className="w-16 h-16 rounded-xl bg-surface border border-border flex items-center justify-center">
+                <div className="flex flex-col items-center justify-center gap-4 p-10 text-center">
+                  <div className="w-20 h-20 rounded-xl bg-surface border border-border flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-text-secondary/50"
+                      className="w-10 h-10 text-text-secondary/50"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -575,10 +407,10 @@ export default function PageClient({
                     </svg>
                   </div>
                   <div>
-                    <p className="text-[14px] font-medium text-foreground mb-1">
+                    <p className="text-[16px] font-medium text-foreground mb-1">
                       Internal Storage Reference Missing
                     </p>
-                    <p className="text-[14px] font-normal text-text-secondary max-w-xs">
+                    <p className="text-[14px] font-normal text-text-secondary max-w-sm mx-auto">
                       A Protected Asset URL must be configured for <strong>{selected.videoId}</strong> to enable playback.
                     </p>
                   </div>
@@ -587,7 +419,7 @@ export default function PageClient({
             </div>
 
             {/* Quick stats bar below video */}
-            <div className="flex items-center gap-3 mt-3 flex-wrap">
+            <div className="flex items-center gap-4 mt-5 flex-wrap">
               {[
                 { label: "Duration", value: selected.videoLength },
                 { label: "Resolution", value: selected.resolution },
@@ -596,12 +428,12 @@ export default function PageClient({
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="flex items-center gap-2 bg-surface border border-border rounded-md px-3 py-1.5 hover:border-border-hover transition-colors"
+                  className="flex items-center gap-2.5 bg-surface border border-border rounded-lg px-4 py-2 hover:border-border-hover transition-colors"
                 >
-                  <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">
+                  <span className="text-[12px] font-medium uppercase tracking-wider text-text-secondary">
                     {s.label}
                   </span>
-                  <span className="text-[13px] font-semibold font-mono text-foreground">
+                  <span className="text-[14px] font-semibold font-mono text-foreground">
                     {s.value}
                   </span>
                 </div>
@@ -610,23 +442,21 @@ export default function PageClient({
           </div>
 
           {/* ─── METADATA PANEL ─── */}
-          <aside className="w-full lg:w-[320px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l border-border lg:overflow-y-auto bg-background flex-shrink-0">
-            <div className="px-5 py-3.5 border-b border-border">
-              <h3 className="text-[16px] font-semibold text-foreground tracking-tight">
+          <aside className="w-full lg:w-[400px] lg:min-w-[400px] border-l border-border bg-background flex-shrink-0 overflow-y-auto">
+            <div className="px-6 py-5 border-b border-border bg-surface/30">
+              <h3 className="text-[18px] font-semibold text-foreground tracking-tight">
                 Metadata
               </h3>
-              <p className="text-[13px] font-normal text-text-secondary mt-0.5">
+              <p className="text-[14px] font-normal text-text-secondary mt-1">
                 All fields for {selected.videoId}
               </p>
             </div>
 
-            <div className="px-4 py-4 space-y-4">
-
+            <div className="px-6 py-6 space-y-5">
               <MetadataSection title="Identity">
                 <MetadataRow label="Worker ID" value={selected.workerId} mono />
                 <MetadataRow label="Video ID" value={selected.videoId} mono />
               </MetadataSection>
-
 
               <MetadataSection title="Classification">
                 <MetadataRow label="Main Category" value={selected.mainCategory} />
@@ -635,7 +465,7 @@ export default function PageClient({
                   label="Status"
                   value={
                     <span
-                      className={`inline-flex text-[10px] font-medium px-1.5 py-[1px] rounded ${statusColor(
+                      className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${statusColor(
                         selected.status
                       )}`}
                     >
@@ -644,7 +474,6 @@ export default function PageClient({
                   }
                 />
               </MetadataSection>
-
 
               <MetadataSection title="Recording">
                 <MetadataRow label="Video Length" value={selected.videoLength} mono />
@@ -662,7 +491,6 @@ export default function PageClient({
                 <MetadataRow label="Audio Quality" value={selected.audioQuality} />
               </MetadataSection>
 
-
               <MetadataSection title="Quality & Compliance">
                 <MetadataRow
                   label="Hands Visible"
@@ -670,8 +498,8 @@ export default function PageClient({
                     <span
                       className={
                         selected.handsVisible
-                          ? "text-emerald-400"
-                          : "text-red-400"
+                          ? "text-emerald-400 font-medium"
+                          : "text-red-400 font-medium"
                       }
                     >
                       {selected.handsVisible ? "Yes" : "No"}
@@ -685,33 +513,445 @@ export default function PageClient({
                 <MetadataRow
                   label="PII Check Status"
                   value={
-                    <span className={`text-[12px] font-medium ${piiColor(selected.piiCheckStatus)}`}>
+                    <span className={`text-[13px] font-medium ${piiColor(selected.piiCheckStatus)}`}>
                       {selected.piiCheckStatus}
                     </span>
                   }
                 />
               </MetadataSection>
-
-              {/* Feature 3: Dataset Health Panel */}
-              <MetadataSection title="Dataset Health">
-                <ProgressBar label="Approved" percent={datasetStats.approvedPercent} color="bg-accent" />
-                <ProgressBar label="PII Cleared" percent={datasetStats.piiPercent} color="bg-emerald-500" />
-                <ProgressBar label="Good Lighting" percent={datasetStats.lightingPercent} color="bg-amber-400" />
-                <ProgressBar label="Hands Visible" percent={datasetStats.handsPercent} color="bg-blue-400" />
-              </MetadataSection>
-
-              {/* Feature 4: Dataset Insights Panel */}
-              <MetadataSection title="Dataset Insights">
-                <MetadataRow label="Most Common Cat." value={datasetStats.mostCommonCat} />
-                <MetadataRow label="Highest Resolution" value={datasetStats.highestRes} mono />
-                <MetadataRow label="Environments" value={datasetStats.envCount.toString()} mono />
-                <MetadataRow label="Dataset Approved" value={`${datasetStats.approvedPercent}%`} mono />
-              </MetadataSection>
-
-
             </div>
           </aside>
         </div>
+      </div>
+    );
+  }
+
+  // ─── DATASET EXPLORER (GRID VIEW) ───
+  return (
+    <div className="flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden bg-background">
+      {/* ─── LEFT SIDEBAR (Filters) ─── */}
+      <aside className="w-full md:w-[280px] lg:w-[320px] md:min-w-[280px] lg:min-w-[320px] flex flex-col border-r border-border bg-background flex-shrink-0 overflow-y-auto">
+        <div className="px-5 pt-5 pb-5 border-b border-border bg-surface/30">
+          <div className="min-w-0">
+            {role === "client" ? (
+              <div className="leading-tight">
+                <p className="text-[16px] font-bold text-foreground truncate tracking-tight" title={collectionTitle || "Collection"}>
+                  {collectionTitle || "Collection"}
+                </p>
+                <p className="text-[13px] font-medium text-text-secondary mt-1">{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
+              </div>
+            ) : (
+              <p className="text-[15px] font-bold text-foreground leading-tight truncate">
+                Sample Dataset Explorer
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-5">
+            <div className="bg-surface border border-border rounded-xl p-3.5 flex flex-col hover:border-accent/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <svg className="w-4 h-4 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                <span className="text-[11px] text-text-secondary uppercase tracking-wider font-semibold">Total</span>
+              </div>
+              <span className="text-[22px] font-bold text-foreground leading-tight tracking-tight">{datasetStats.totalVideos}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-3.5 flex flex-col hover:border-accent/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <svg className="w-4 h-4 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <span className="text-[11px] text-text-secondary uppercase tracking-wider font-semibold">Footage</span>
+              </div>
+              <span className="text-[22px] font-bold text-foreground leading-tight tracking-tight">{datasetStats.durationStr}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-3.5 flex flex-col hover:border-accent/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <svg className="w-4 h-4 text-emerald-500/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <span className="text-[11px] text-text-secondary uppercase tracking-wider font-semibold">Approved</span>
+              </div>
+              <span className="text-[22px] font-bold text-foreground leading-tight tracking-tight">{datasetStats.approvedVideos}</span>
+            </div>
+            <div className="bg-surface border border-border rounded-xl p-3.5 flex flex-col hover:border-accent/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/10 transition-all duration-300">
+              <div className="flex items-center gap-2 mb-1.5">
+                <svg className="w-4 h-4 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+                <span className="text-[11px] text-text-secondary uppercase tracking-wider font-semibold">Categories</span>
+              </div>
+              <span className="text-[22px] font-bold text-foreground leading-tight tracking-tight">{datasetStats.totalCategories}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="px-5 pt-5 pb-4 border-b border-border">
+          <h3 className="text-[12px] font-bold text-text-secondary uppercase tracking-widest mb-3">
+            Search
+          </h3>
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+            </svg>
+            <input
+              id="search-videos"
+              type="text"
+              placeholder="Search IDs, tasks..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all"
+            />
+          </div>
+        </div>
+
+        <div className="px-5 pt-5 pb-4 border-b border-border">
+          <div
+            className="flex items-center justify-between cursor-pointer group mb-3"
+            onClick={() => setIsCategoriesExpanded(!isCategoriesExpanded)}
+          >
+            <h3 className="text-[12px] font-bold text-text-secondary uppercase tracking-widest">
+              Categories
+            </h3>
+            <svg
+              className={`w-4 h-4 text-text-secondary transition-transform duration-300 ${isCategoriesExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          <div
+            className={`transition-all duration-300 ease-in-out overflow-hidden ${isCategoriesExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+          >
+            <div className="flex flex-col gap-2.5">
+              {categories.map((cat) => {
+                const isActive = cat === activeCategory;
+                const count = cat === "All"
+                    ? videos.length
+                    : videos.filter((v) => v.mainCategory === cat).length;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`
+                      flex items-center justify-between px-3 py-2 rounded-lg transition-all text-left w-full
+                      ${isActive
+                        ? "bg-accent/15 text-accent font-semibold"
+                        : "text-text-secondary hover:bg-surface hover:text-foreground font-medium"
+                      }
+                    `}
+                  >
+                    <span className="text-[13px]">{cat}</span>
+                    <span className={`text-[12px] ${isActive ? "text-accent/80" : "text-text-secondary/60"} font-mono`}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ─── NEW PRD FILTERS ─── */}
+        <div className="px-5 pt-5 pb-6 border-b border-border bg-surface/10">
+          <div
+            className="flex items-center justify-between cursor-pointer group"
+            onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0H4.5m4.5 12h9.75M10.5 18a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0H4.5m4.5-6h-9.75M15 12a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm0 0h9.75" />
+              </svg>
+              <h3 className="text-[13px] font-bold text-foreground">Filters</h3>
+            </div>
+            <svg
+              className={`w-4 h-4 text-text-secondary transition-transform duration-300 ${isFiltersExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+
+          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isFiltersExpanded ? "max-h-[1000px] opacity-100 mt-5" : "max-h-0 opacity-0 mt-0"}`}>
+            <div className="flex flex-col gap-6">
+              
+              {/* FRAME RATE */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">Frame Rate</h4>
+                <div className="flex flex-col gap-2.5">
+                  {["All", "30fps", "60fps"].map(opt => (
+                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${frameRateFilter === opt ? 'border-accent bg-transparent' : 'border-border group-hover:border-accent/50'}`}>
+                        {frameRateFilter === opt && <div className="w-2 h-2 rounded-full bg-accent" />}
+                      </div>
+                      <input type="radio" className="hidden" checked={frameRateFilter === opt} onChange={() => setFrameRateFilter(opt)} />
+                      <span className={`text-[13px] ${frameRateFilter === opt ? "text-foreground font-medium" : "text-text-secondary group-hover:text-foreground/80"}`}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* RESOLUTION */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">Resolution</h4>
+                <div className="flex flex-col gap-2.5">
+                  {["All", "1080p", "720p"].map(opt => (
+                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${resolutionFilter === opt ? 'border-accent bg-transparent' : 'border-border group-hover:border-accent/50'}`}>
+                        {resolutionFilter === opt && <div className="w-2 h-2 rounded-full bg-accent" />}
+                      </div>
+                      <input type="radio" className="hidden" checked={resolutionFilter === opt} onChange={() => setResolutionFilter(opt)} />
+                      <span className={`text-[13px] ${resolutionFilter === opt ? "text-foreground font-medium" : "text-text-secondary group-hover:text-foreground/80"}`}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* AUDIO QUALITY */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">Audio Quality</h4>
+                <div className="flex flex-col gap-2.5">
+                  {["All", "Good", "Poor"].map(opt => (
+                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${audioQualityFilter === opt ? 'border-accent bg-transparent' : 'border-border group-hover:border-accent/50'}`}>
+                        {audioQualityFilter === opt && <div className="w-2 h-2 rounded-full bg-accent" />}
+                      </div>
+                      <input type="radio" className="hidden" checked={audioQualityFilter === opt} onChange={() => setAudioQualityFilter(opt)} />
+                      <span className={`text-[13px] ${audioQualityFilter === opt ? "text-foreground font-medium" : "text-text-secondary group-hover:text-foreground/80"}`}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* PII STATUS */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">PII Status</h4>
+                <div className="flex flex-col gap-2.5">
+                  {["All", "No PII", "Blurred Required"].map(opt => (
+                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${piiStatusFilter === opt ? 'border-accent bg-transparent' : 'border-border group-hover:border-accent/50'}`}>
+                        {piiStatusFilter === opt && <div className="w-2 h-2 rounded-full bg-accent" />}
+                      </div>
+                      <input type="radio" className="hidden" checked={piiStatusFilter === opt} onChange={() => setPiiStatusFilter(opt)} />
+                      <span className={`text-[13px] ${piiStatusFilter === opt ? "text-foreground font-medium" : "text-text-secondary group-hover:text-foreground/80"}`}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* LIGHTING QUALITY */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">Lighting Quality</h4>
+                <div className="flex flex-col gap-2.5">
+                  {["All", "Good", "Poor"].map(opt => (
+                    <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${lightingQualityFilter === opt ? 'border-accent bg-transparent' : 'border-border group-hover:border-accent/50'}`}>
+                        {lightingQualityFilter === opt && <div className="w-2 h-2 rounded-full bg-accent" />}
+                      </div>
+                      <input type="radio" className="hidden" checked={lightingQualityFilter === opt} onChange={() => setLightingQualityFilter(opt)} />
+                      <span className={`text-[13px] ${lightingQualityFilter === opt ? "text-foreground font-medium" : "text-text-secondary group-hover:text-foreground/80"}`}>{opt}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* HANDS VISIBLE */}
+              <div>
+                <h4 className="text-[11px] font-bold text-text-secondary uppercase tracking-widest mb-3">Hands Visible</h4>
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-text-secondary">Show only</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={handsVisibleFilter} onChange={(e) => setHandsVisibleFilter(e.target.checked)} />
+                    <div className="w-9 h-5 bg-surface border border-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-text-secondary peer-checked:after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent peer-checked:border-accent"></div>
+                  </label>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ─── MAIN CONTENT (Video Grid) ─── */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto bg-background/50 p-6 md:p-8">
+        <div className="mb-6 flex justify-between items-end flex-wrap gap-4">
+          <div>
+            <h1 className="text-[28px] font-bold tracking-tight text-foreground">Dataset Explorer</h1>
+            <p className="text-[14px] text-text-secondary mt-1">
+              Showing {filtered.length} {filtered.length === 1 ? 'video' : 'videos'} matching filters
+            </p>
+          </div>
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-border/50 rounded-2xl bg-surface/10">
+            <svg className="w-12 h-12 text-text-secondary/30 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <p className="text-[16px] font-semibold text-foreground">No videos found</p>
+            <p className="text-[14px] text-text-secondary mt-1 max-w-sm">Adjust your search or category filters to find what you're looking for.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 pb-12">
+            {filtered.map((v) => (
+              <div
+                key={v.videoId}
+                className="relative group z-10 hover:z-50"
+              >
+                {/* 1. Base Card */}
+                <div 
+                  onClick={() => handleSelect(v.videoId)}
+                  className="cursor-pointer flex flex-col gap-3 transition-transform duration-300"
+                >
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-surface border border-border shadow-sm">
+                    {v.thumbnailUrl ? (
+                      <img src={v.thumbnailUrl} alt={v.taskType} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-surface/50">
+                        <svg className="w-8 h-8 text-text-secondary/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Badges */}
+                    <div className="absolute top-2 right-2 flex gap-1.5 z-20">
+                      {v.status === "Completed" && (
+                        <span className="bg-emerald-500 text-white text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm">
+                          Verified
+                        </span>
+                      )}
+                    </div>
+                    <div className="absolute bottom-2 right-2 z-20">
+                      <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-mono font-medium px-2 py-[2px] rounded-md border border-white/10 shadow-sm">
+                        {v.videoLength}
+                      </span>
+                    </div>
+                    <div className="absolute top-2 left-2 flex gap-1.5 z-20">
+                      <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm text-white ${
+                        v.piiCheckStatus === "Passed" ? "bg-blue-500" : v.piiCheckStatus === "Flagged" ? "bg-red-500" : "bg-amber-500"
+                      }`}>
+                        {v.piiCheckStatus === "Passed" ? "No PII" : v.piiCheckStatus}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex flex-col gap-1 px-0.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="text-[15px] font-semibold text-foreground leading-tight line-clamp-1 group-hover:text-accent transition-colors">
+                        {v.taskType}
+                      </h3>
+                    </div>
+                    <p className="text-[13px] text-text-secondary line-clamp-1">
+                      {v.mainCategory}
+                    </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-[11px] text-text-secondary font-mono bg-surface border border-border px-1.5 py-0.5 rounded text-text-secondary/70" title={v.videoId}>
+                        {v.videoId.length > 8 ? `${v.videoId.substring(0, 8)}...` : v.videoId}
+                      </span>
+                      <span className="text-[12px] text-text-secondary/60 flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                        </svg>
+                        {v.locationEnvironment.split("_").join(" ")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Hover Popup Box (Fades in over the base card) */}
+                <div 
+                  className="absolute -inset-x-3 -top-3 bg-surface/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.8)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 scale-[0.98] group-hover:scale-100 pointer-events-none group-hover:pointer-events-auto flex flex-col z-50 overflow-hidden"
+                  style={{ maxHeight: '450px' }}
+                >
+                   {/* Popup Thumbnail */}
+                   <div className="relative aspect-video bg-background shrink-0 cursor-pointer border-b border-border/50" onClick={() => handleSelect(v.videoId)}>
+                     {v.thumbnailUrl ? (
+                       <img src={v.thumbnailUrl} alt={v.taskType} className="w-full h-full object-cover" />
+                     ) : (
+                       <div className="w-full h-full flex items-center justify-center bg-surface/50">
+                         <svg className="w-8 h-8 text-text-secondary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+                         </svg>
+                       </div>
+                     )}
+                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                       <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-lg transform scale-90 hover:scale-100 transition-transform">
+                         <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                       </div>
+                     </div>
+                     {/* Badges in popup */}
+                     <div className="absolute top-2.5 left-2.5">
+                       <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm text-white ${
+                         v.piiCheckStatus === "Passed" ? "bg-blue-500" : v.piiCheckStatus === "Flagged" ? "bg-red-500" : "bg-amber-500"
+                       }`}>
+                         {v.piiCheckStatus === "Passed" ? "No PII" : v.piiCheckStatus}
+                       </span>
+                     </div>
+                     {v.status === "Completed" && (
+                       <div className="absolute top-2.5 right-2.5">
+                         <span className="bg-emerald-500 text-white text-[11px] font-medium px-2 py-0.5 rounded-md shadow-sm">
+                           Verified
+                         </span>
+                       </div>
+                     )}
+                     <div className="absolute bottom-2.5 right-2.5">
+                       <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-mono font-medium px-2 py-[2px] rounded-md border border-white/10 shadow-sm">
+                         {v.videoLength}
+                       </span>
+                     </div>
+                   </div>
+
+                   {/* Popup Scrollable Details */}
+                   <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+                     <h4 className="text-[15px] font-bold text-foreground leading-tight mb-3 pr-2">{v.taskType}</h4>
+                     
+                     <div className="flex flex-col gap-2.5">
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Resolution</span>
+                         <span className="text-[12px] font-bold text-foreground font-mono text-right">{v.resolution}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Frame Rate</span>
+                         <span className="text-[12px] font-bold text-foreground font-mono text-right">{v.frameRate}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Worker ID</span>
+                         <span className="text-[12px] font-bold text-foreground font-mono truncate text-right max-w-[120px]" title={v.workerId}>{v.workerId}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Category</span>
+                         <span className="text-[12px] font-bold text-foreground truncate text-right max-w-[120px]" title={v.mainCategory}>{v.mainCategory}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Audio Quality</span>
+                         <span className="text-[12px] font-bold text-foreground text-right">{v.audioQuality}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Lighting</span>
+                         <span className="text-[12px] font-bold text-foreground text-right">{v.lightingQuality}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Recorded</span>
+                         <span className="text-[12px] font-bold text-foreground text-right">{v.recordingDate}</span>
+                       </div>
+                       <div className="flex justify-between items-center gap-2">
+                         <span className="text-[12px] font-medium text-text-secondary whitespace-nowrap">Environment</span>
+                         <span className="text-[12px] font-bold text-foreground text-right">{v.locationEnvironment.split('_').join(' ')}</span>
+                       </div>
+                     </div>
+                   </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
@@ -728,10 +968,10 @@ function MetadataSection({
 }) {
   return (
     <div>
-      <h4 className="text-[14px] font-semibold text-foreground mb-2 pb-1 border-b border-border/50">
+      <h4 className="text-[13px] font-bold text-foreground mb-3 pb-2 border-b border-border/50 uppercase tracking-wide">
         {title}
       </h4>
-      <div className="space-y-1.5 bg-surface border border-border rounded-lg p-3">
+      <div className="space-y-1.5 bg-surface/50 border border-border rounded-xl p-4">
         {children}
       </div>
     </div>
@@ -749,9 +989,9 @@ function MetadataRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-3 min-h-[26px]">
-      <span className="text-[12px] font-medium text-text-secondary flex-shrink-0">{label}</span>
+      <span className="text-[13px] font-medium text-text-secondary flex-shrink-0">{label}</span>
       <span
-        className={`text-[14px] font-medium text-foreground text-right ${mono ? "font-mono" : ""
+        className={`text-[14px] font-medium text-foreground text-right ${mono ? "font-mono text-[13px]" : ""
           }`}
       >
         {value}
@@ -762,12 +1002,12 @@ function MetadataRow({
 
 function ProgressBar({ label, percent, color }: { label: string; percent: number; color: string }) {
   return (
-    <div className="flex flex-col gap-1 w-full py-1">
+    <div className="flex flex-col gap-1.5 w-full py-1.5">
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-medium text-text-secondary">{label}</span>
         <span className="text-[12px] font-medium font-mono text-foreground">{percent}%</span>
       </div>
-      <div className="w-full h-1.5 bg-background border border-border rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-background border border-border rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-[width] duration-700 ease-out`} style={{ width: `${percent}%` }} />
       </div>
     </div>

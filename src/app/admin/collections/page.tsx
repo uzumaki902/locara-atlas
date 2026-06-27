@@ -155,8 +155,8 @@ export default async function AdminCollectionsPage() {
                       <span
                         className={`inline-flex text-[11px] font-medium px-2 py-0.5 rounded ${
                           col.is_published
-                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20"
-                            : "bg-zinc-500/15 text-zinc-400 border border-zinc-500/20"
+                            ? "bg-emerald-500 text-white"
+                            : "bg-zinc-500 text-white"
                         }`}
                       >
                         {col.is_published ? "Published" : "Draft"}
