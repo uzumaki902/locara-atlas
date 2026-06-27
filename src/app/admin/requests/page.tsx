@@ -21,9 +21,14 @@ export default async function AdminRequestsPage() {
     redirect("/collections");
   }
 
-  // Schema guarantees foreign keys from dataset_requests to profiles(user_id) and organizations(organization_id).
-  // We use a single strict relational query.
-  const { data: requests, error } = await supabase
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const adminClient = createAdminClient();
+
+  // Try relational query first, fallback to decoupled
+  let requests: any[] | null = null;
+  let error: any = null;
+
+  const result = await adminClient
     .from("dataset_requests")
     .select(`
       id,
@@ -34,10 +39,32 @@ export default async function AdminRequestsPage() {
       notes,
       status,
       created_at,
+      user_id,
+      organization_id,
       profiles (full_name),
       organizations (name)
     `)
     .order("created_at", { ascending: false });
+
+  if (result.error) {
+    const [reqRes, profilesRes, orgsRes] = await Promise.all([
+      adminClient.from("dataset_requests").select("*").order("created_at", { ascending: false }),
+      adminClient.from("profiles").select("id, full_name"),
+      adminClient.from("organizations").select("id, name"),
+    ]);
+    error = reqRes.error || profilesRes.error || orgsRes.error;
+    if (!error) {
+      const profileMap = new Map((profilesRes.data || []).map(p => [p.id, p.full_name]));
+      const orgMap = new Map((orgsRes.data || []).map(o => [o.id, o.name]));
+      requests = (reqRes.data || []).map(r => ({
+        ...r,
+        profiles: { full_name: profileMap.get(r.user_id) || "Unknown User" },
+        organizations: { name: orgMap.get(r.organization_id) || "Unknown Organization" },
+      }));
+    }
+  } else {
+    requests = result.data;
+  }
 
   // Helper function to render status badges
   const renderStatusBadge = (status: string) => {
@@ -142,7 +169,7 @@ export default async function AdminRequestsPage() {
                   <tr key={req.id} className="hover:bg-background/40 transition-colors">
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-foreground">
-                        {req.id.split('-')[0]}...
+                        {(req.id || 'N/A').split('-')[0]}...
                       </span>
                     </td>
                     <td className="px-5 py-3">
@@ -175,11 +202,14 @@ export default async function AdminRequestsPage() {
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-text-secondary">
-                        {new Date(req.created_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {req.created_at 
+                          ? new Date(req.created_at).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "N/A"
+                        }
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right align-middle">

@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { CreateVideoButton, VideoRowActions } from "./video-form";
 
 export default async function AdminVideosPage() {
@@ -31,14 +30,38 @@ export default async function AdminVideosPage() {
     .select("id, title")
     .order("created_at", { ascending: false });
 
-  // Fetch videos bypassing RLS
-  const { data: videos, error } = await adminClient
+  // Fetch videos - try relational join first, fallback to decoupled queries
+  let videos: any[] | null = null;
+  let error: any = null;
+
+  const result = await adminClient
     .from("videos")
     .select(`
       *,
       collections (title)
     `)
     .order("recording_date", { ascending: false });
+
+  if (result.error) {
+    // Fallback: fetch videos and collections separately
+    const [videosRes, collectionsFullRes] = await Promise.all([
+      adminClient.from("videos").select("*").order("recording_date", { ascending: false }),
+      adminClient.from("collections").select("id, title"),
+    ]);
+
+    error = videosRes.error || collectionsFullRes.error;
+
+    if (!error) {
+      const colMap = new Map((collectionsFullRes.data || []).map(c => [c.id, c.title]));
+      videos = (videosRes.data || []).map(v => ({
+        ...v,
+        collections: { title: colMap.get(v.collection_id) || "Unassigned" },
+      }));
+    }
+  } else {
+    videos = result.data;
+    error = result.error;
+  }
 
   function piiColor(status: string) {
     if (status === "Passed") return "text-white bg-blue-500 px-2 py-0.5 rounded";
@@ -125,7 +148,7 @@ export default async function AdminVideosPage() {
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-foreground">
-                        {vid.video_id.substring(0, 15)}{vid.video_id.length > 15 ? '...' : ''}
+                        {(vid.video_id || 'N/A').substring(0, 15)}{(vid.video_id || '').length > 15 ? '...' : ''}
                       </span>
                     </td>
                     <td className="px-5 py-3">

@@ -164,11 +164,14 @@ export default async function AdminCollectionsPage() {
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-text-secondary">
-                        {new Date(col.created_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {col.created_at 
+                          ? new Date(col.created_at).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "N/A"
+                        }
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
