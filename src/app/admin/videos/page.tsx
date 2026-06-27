@@ -124,12 +124,9 @@ export default async function AdminVideosPage() {
                       </div>
                     </td>
                     <td className="px-5 py-3">
-                      <Link 
-                        href={`/video/${vid.video_id}`}
-                        className="text-[13px] font-medium text-accent hover:underline"
-                      >
+                      <span className="text-[13px] font-medium text-foreground">
                         {vid.video_id.substring(0, 15)}{vid.video_id.length > 15 ? '...' : ''}
-                      </Link>
+                      </span>
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-foreground">
