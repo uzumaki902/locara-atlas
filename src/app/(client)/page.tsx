@@ -26,10 +26,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
     redirect("/login");
   }
 
-  // Redirect clients to collections page if they access root directly
-  if (profile.role === "client" && !collectionId) {
-    redirect("/collections");
-  }
+  // If no collection specified, show all organization videos in the explorer
 
   // Defensively scope all queries to the organization_id regardless of role
   let query = supabase.from("videos").select("*").eq("organization_id", profile.organization_id);

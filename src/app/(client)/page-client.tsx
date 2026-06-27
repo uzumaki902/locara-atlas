@@ -234,6 +234,22 @@ export default function PageClient({
     setSelectedId(id);
   };
 
+  if (!videos || videos.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-background w-full">
+        <div className="bg-surface border border-border rounded-xl p-10 flex flex-col items-center max-w-md text-center shadow-2xl shadow-black/40">
+          <svg className="w-16 h-16 text-text-secondary/30 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+          <h2 className="text-[20px] font-semibold text-foreground tracking-tight mb-2">No videos available</h2>
+          <p className="text-[14px] text-text-secondary">
+            This collection doesn't have any videos assigned to it yet. Please contact your administrator.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen md:h-screen overflow-x-hidden md:overflow-hidden bg-background">
       {/* ─── LEFT SIDEBAR ─── */}
@@ -243,9 +259,9 @@ export default function PageClient({
           {/* Collection Context */}
           <div className="min-w-0">
             {role === "client" ? (
-              <div className="text-[14px] font-normal text-text-secondary leading-tight">
-                <p className="truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
-                <p>{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
+              <div className="leading-tight">
+                <p className="text-[15px] font-semibold text-foreground truncate" title={collectionTitle || "Collection"}>{collectionTitle || "Collection"}</p>
+                <p className="text-[13px] font-normal text-text-secondary mt-0.5">{videos.length} {videos.length === 1 ? "Video" : "Videos"}</p>
               </div>
             ) : (
               <p className="text-[14px] font-normal text-text-secondary leading-tight truncate">
@@ -255,22 +271,34 @@ export default function PageClient({
           </div>
 
           {/* Feature 1: Dataset Overview Cards */}
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
-              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Total Videos</span>
-              <span className="text-[13px] font-medium text-foreground">{datasetStats.totalVideos}</span>
+          <div className="grid grid-cols-2 gap-2.5 mt-4">
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Videos</span>
+              </div>
+              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalVideos}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
-              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Categories</span>
-              <span className="text-[13px] font-medium text-foreground">{datasetStats.totalCategories}</span>
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" /></svg>
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Categories</span>
+              </div>
+              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.totalCategories}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
-              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Approved</span>
-              <span className="text-[13px] font-medium text-foreground">{datasetStats.approvedVideos}</span>
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Approved</span>
+              </div>
+              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.approvedVideos}</span>
             </div>
-            <div className="bg-surface border border-border rounded-lg p-2.5 flex flex-col">
-              <span className="text-[9px] text-text-secondary uppercase tracking-wider mb-0.5 font-medium">Total Footage</span>
-              <span className="text-[13px] font-medium text-foreground">{datasetStats.durationStr}</span>
+            <div className="bg-surface border border-border rounded-lg p-3 flex flex-col hover:border-border-hover transition-colors">
+              <div className="flex items-center gap-2 mb-1">
+                <svg className="w-3.5 h-3.5 text-accent/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Total Footage</span>
+              </div>
+              <span className="text-[18px] font-bold text-foreground leading-tight">{datasetStats.durationStr}</span>
             </div>
           </div>
         </div>
@@ -358,7 +386,7 @@ export default function PageClient({
               placeholder="Search videos, categories, IDs..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-[7px] text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
+              className="w-full pl-8 pr-3 py-2 text-[14px] rounded-lg bg-surface border border-border text-foreground placeholder:text-text-secondary/60 focus:outline-none focus:ring-1 focus:ring-accent/40 focus:border-accent/40 transition-all duration-150"
             />
           </div>
         </div>
@@ -366,8 +394,12 @@ export default function PageClient({
         {/* Video List */}
         <div className="flex-1 overflow-y-auto px-3 pb-24 space-y-0.5 max-h-[40vh] md:max-h-none">
           {filtered.length === 0 && (
-            <div className="text-center py-16 text-text-secondary text-[12px]">
-              No videos match your filters.
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <svg className="w-8 h-8 text-text-secondary/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+              </svg>
+              <p className="text-[13px] font-medium text-text-secondary">No videos match your filters.</p>
+              <p className="text-[12px] text-text-secondary/60 mt-1">Try adjusting your search or category.</p>
             </div>
           )}
           {filtered.map((v) => {
@@ -380,8 +412,8 @@ export default function PageClient({
                 className={`
                   w-full text-left rounded-lg px-3 py-2.5 transition-all duration-150 cursor-pointer
                   ${isActive
-                    ? "bg-accent/8 border border-accent/20"
-                    : "bg-transparent border border-transparent"
+                    ? "bg-accent/10 border border-accent/30 shadow-sm shadow-accent/5"
+                    : "bg-transparent border border-transparent hover:bg-surface/50"
                   }
                 `}
               >
@@ -408,9 +440,6 @@ export default function PageClient({
                   >
                     {v.status}
                   </span>
-                  <span className="text-[12px] font-medium text-text-secondary/50">
-                    {v.mainCategory}
-                  </span>
                 </div>
               </button>
             );
@@ -421,7 +450,7 @@ export default function PageClient({
       {/* ─── MAIN CONTENT ─── */}
       <main className="flex-1 flex flex-col min-w-0 md:overflow-hidden">
         {/* Top bar */}
-        <header className="h-12 min-h-[48px] flex items-center justify-between px-5 border-b border-border bg-background/90 backdrop-blur-sm">
+        <header className="h-14 min-h-[56px] flex items-center justify-between px-5 border-b border-border bg-background/90 backdrop-blur-sm">
           <div className="flex items-center gap-3 min-w-0">
             <div className="min-w-0">
               <h2 className="text-[20px] font-semibold text-foreground truncate">
@@ -477,20 +506,21 @@ export default function PageClient({
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[10px] text-white font-mono w-10 text-right">{formatTime(progress)}</span>
-                      <input
-                        type="range"
-                        min="0"
-                        max={duration || 100}
-                        value={progress}
-                        onChange={handleSeek}
-                        className="flex-1 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
-                      />
+                        <input
+                          type="range"
+                          min="0"
+                          max={duration || 100}
+                          value={progress}
+                          onChange={handleSeek}
+                          className="flex-1 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
+                          aria-label="Seek video"
+                        />
                       <span className="text-[10px] text-white font-mono w-10">{formatTime(duration)}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <button onClick={togglePlay} className="text-white">
+                        <button onClick={togglePlay} className="text-white hover:text-white/70 transition-colors" aria-label={isPlaying ? "Pause video" : "Play video"}>
                           {isPlaying ? (
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
                           ) : (
@@ -499,26 +529,27 @@ export default function PageClient({
                         </button>
 
                         <div className="flex items-center gap-2 relative">
-                          <button onClick={toggleMute} className="text-white">
+                          <button onClick={toggleMute} className="text-white hover:text-white/70 transition-colors" aria-label={isMuted || volume === 0 ? "Unmute video" : "Mute video"}>
                             {isMuted || volume === 0 ? (
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" /></svg>
                             ) : (
                               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" /></svg>
                             )}
                           </button>
-                          <input
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.05"
-                            value={isMuted ? 0 : volume}
-                            onChange={handleVolumeChange}
-                            className="w-16 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
-                          />
+                            <input
+                              type="range"
+                              min="0"
+                              max="1"
+                              step="0.05"
+                              value={isMuted ? 0 : volume}
+                              onChange={handleVolumeChange}
+                              className="w-16 h-1 bg-white/30 rounded-full appearance-none cursor-pointer accent-accent"
+                              aria-label="Volume"
+                            />
                         </div>
                       </div>
 
-                      <button onClick={toggleFullscreen} className="text-white">
+                      <button onClick={toggleFullscreen} className="text-white hover:text-white/70 transition-colors" aria-label="Toggle fullscreen">
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
                         </svg>
@@ -565,12 +596,12 @@ export default function PageClient({
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="flex items-center gap-2 bg-surface border border-border rounded-md px-2.5 py-1"
+                  className="flex items-center gap-2 bg-surface border border-border rounded-md px-3 py-1.5 hover:border-border-hover transition-colors"
                 >
-                  <span className="text-[12px] font-medium uppercase tracking-wider text-text-secondary">
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-text-secondary">
                     {s.label}
                   </span>
-                  <span className="text-[14px] font-medium font-mono text-foreground">
+                  <span className="text-[13px] font-semibold font-mono text-foreground">
                     {s.value}
                   </span>
                 </div>
@@ -581,10 +612,10 @@ export default function PageClient({
           {/* ─── METADATA PANEL ─── */}
           <aside className="w-full lg:w-[320px] lg:min-w-[320px] border-t lg:border-t-0 lg:border-l border-border lg:overflow-y-auto bg-background flex-shrink-0">
             <div className="px-5 py-3.5 border-b border-border">
-              <h3 className="text-[20px] font-semibold text-foreground tracking-tight">
+              <h3 className="text-[16px] font-semibold text-foreground tracking-tight">
                 Metadata
               </h3>
-              <p className="text-[14px] font-normal text-text-secondary mt-0.5">
+              <p className="text-[13px] font-normal text-text-secondary mt-0.5">
                 All fields for {selected.videoId}
               </p>
             </div>
@@ -697,10 +728,10 @@ function MetadataSection({
 }) {
   return (
     <div>
-      <h4 className="text-[16px] font-semibold text-foreground mb-3">
+      <h4 className="text-[14px] font-semibold text-foreground mb-2 pb-1 border-b border-border/50">
         {title}
       </h4>
-      <div className="space-y-1.5 bg-surface border border-border rounded-lg p-2.5">
+      <div className="space-y-1.5 bg-surface border border-border rounded-lg p-3">
         {children}
       </div>
     </div>
@@ -717,7 +748,7 @@ function MetadataRow({
   mono?: boolean;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3">
+    <div className="flex items-center justify-between gap-3 min-h-[26px]">
       <span className="text-[12px] font-medium text-text-secondary flex-shrink-0">{label}</span>
       <span
         className={`text-[14px] font-medium text-foreground text-right ${mono ? "font-mono" : ""
@@ -737,7 +768,7 @@ function ProgressBar({ label, percent, color }: { label: string; percent: number
         <span className="text-[12px] font-medium font-mono text-foreground">{percent}%</span>
       </div>
       <div className="w-full h-1.5 bg-background border border-border rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full`} style={{ width: `${percent}%` }} />
+        <div className={`h-full ${color} rounded-full transition-[width] duration-700 ease-out`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

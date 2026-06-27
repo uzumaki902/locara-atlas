@@ -18,7 +18,7 @@ export default async function CollectionsPage() {
     .eq("id", user.id)
     .single();
 
-  console.log("PROFILE:", profile);
+
 
   if (profile?.role !== "client") {
     redirect("/admin");
@@ -37,8 +37,7 @@ export default async function CollectionsPage() {
     .from("videos")
     .select("collection_id");
 
-  console.log("COLLECTIONS", collections);
-  console.log("VIDEOS", videos);
+
 
   const collectionsData = collections || [];
   const videosData = videos || [];
@@ -63,21 +62,25 @@ export default async function CollectionsPage() {
             <Link 
               key={collection.id} 
               href={`/?collection=${collection.id}`}
-              className="group block bg-surface border border-border rounded-lg overflow-hidden hover:border-accent/40 transition-colors duration-200"
+              className="group block bg-surface border border-border rounded-xl overflow-hidden hover:border-accent/40 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 hover:-translate-y-0.5"
             >
               {/* Card Thumbnail Area */}
-              <div className="aspect-video bg-[#0F0F14] relative flex items-center justify-center border-b border-border">
+              <div className="aspect-video relative flex items-center justify-center border-b border-border overflow-hidden"
+                style={{ background: "linear-gradient(135deg, #0F0F18 0%, #14141F 50%, #0F0F18 100%)" }}
+              >
                 {collection.cover_image_url ? (
                   <Image 
                     src={collection.cover_image_url} 
                     alt={collection.title} 
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
-                  <svg className="w-10 h-10 text-text-secondary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                  <div className="flex flex-col items-center gap-2">
+                    <svg className="w-10 h-10 text-text-secondary/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
                 )}
               </div>
 
@@ -113,8 +116,12 @@ export default async function CollectionsPage() {
         })}
 
         {collectionsData.length === 0 && (
-          <div className="col-span-full py-16 text-center text-text-secondary bg-surface border border-border rounded-lg border-dashed">
-            No collections assigned yet.
+          <div className="col-span-full py-16 text-center bg-surface border border-border rounded-lg border-dashed">
+            <svg className="w-10 h-10 text-text-secondary/30 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+            </svg>
+            <p className="text-[14px] font-medium text-text-secondary">No collections assigned yet.</p>
+            <p className="text-[12px] text-text-secondary/60 mt-1">Contact your administrator to get access.</p>
           </div>
         )}
       </div>
