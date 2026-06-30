@@ -12,7 +12,7 @@ export default async function ClientDashboardPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, organization_id")
+    .select("role, organization_id, full_name")
     .eq("id", user.id)
     .single();
 
@@ -106,7 +106,9 @@ export default async function ClientDashboardPage() {
         
         {/* Header */}
         <div>
-          <h1 className="text-[28px] font-bold tracking-tight text-foreground">Welcome back</h1>
+          <h1 className="text-[28px] font-bold tracking-tight text-foreground">
+            Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
+          </h1>
           <p className="text-[14px] text-text-secondary mt-1">
             {orgName} &middot; Dataset overview
           </p>

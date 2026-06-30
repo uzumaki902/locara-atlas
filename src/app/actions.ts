@@ -13,7 +13,9 @@ export async function logout() {
 
 export async function submitDatasetRequest(formData: FormData) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) return { success: false, error: "Unauthorized" };
 
@@ -34,23 +36,24 @@ export async function submitDatasetRequest(formData: FormData) {
   const notes = formData.get("notes") as string;
 
   // Server-side validation
-  if (!taskType || taskType.trim() === "") return { success: false, error: "Task Type is required." };
-  if (!environment || environment.trim() === "") return { success: false, error: "Environment is required." };
-  if (isNaN(hoursNeeded) || hoursNeeded <= 0) return { success: false, error: "Valid Hours Needed is required." };
+  if (!taskType || taskType.trim() === "")
+    return { success: false, error: "Task Type is required." };
+  if (!environment || environment.trim() === "")
+    return { success: false, error: "Environment is required." };
+  if (isNaN(hoursNeeded) || hoursNeeded <= 0)
+    return { success: false, error: "Valid Hours Needed is required." };
   if (!deadline) return { success: false, error: "Deadline is required." };
 
-  const { error } = await supabase
-    .from("dataset_requests")
-    .insert({
-      organization_id: profile.organization_id,
-      user_id: user.id,
-      task_type: taskType.trim(),
-      environment: environment.trim(),
-      hours_needed: hoursNeeded,
-      deadline: deadline,
-      notes: notes ? notes.trim() : null,
-      status: "Submitted"
-    });
+  const { error } = await supabase.from("dataset_requests").insert({
+    organization_id: profile.organization_id,
+    user_id: user.id,
+    task_type: taskType.trim(),
+    environment: environment.trim(),
+    hours_needed: hoursNeeded,
+    deadline: deadline,
+    notes: notes ? notes.trim() : null,
+    status: "Submitted",
+  });
 
   if (error) {
     console.log("DATASET REQUEST ERROR:", error);
@@ -63,5 +66,3 @@ export async function submitDatasetRequest(formData: FormData) {
   revalidatePath("/requests");
   return { success: true };
 }
-
-
