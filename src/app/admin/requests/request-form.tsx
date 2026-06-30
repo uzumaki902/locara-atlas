@@ -39,7 +39,7 @@ function Modal({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h3 className="text-[18px] font-semibold text-foreground mb-4">{title}</h3>
+        <h3 className="text-[18px] font-semibold text-foreground mb-4 pr-8">{title}</h3>
         {children}
       </div>
     </div>
