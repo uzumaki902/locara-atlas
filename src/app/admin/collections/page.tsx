@@ -137,9 +137,23 @@ export default async function AdminCollectionsPage() {
                 return (
                   <tr key={col.id} className="hover:bg-background/40 transition-colors">
                     <td className="px-5 py-3">
-                      <span className="text-[14px] font-medium text-foreground">
-                        {col.title}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {col.cover_image_url ? (
+                          <div className="w-10 h-7 rounded border border-border overflow-hidden bg-background shrink-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={col.cover_image_url} alt={col.title} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-10 h-7 rounded border border-border bg-background flex items-center justify-center shrink-0">
+                            <span className="text-[10px] font-medium text-text-secondary">
+                              {col.title.substring(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-[14px] font-medium text-foreground">
+                          {col.title}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-5 py-3">
                       <span className="text-[13px] font-medium text-text-secondary">

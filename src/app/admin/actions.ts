@@ -1,12 +1,37 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+
+async function uploadImageToSupabase(file: File): Promise<string | null> {
+  if (!file || file.size === 0) return null;
+  const adminClient = createAdminClient();
+  const fileExt = file.name.split('.').pop() || 'png';
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+  
+  const { data, error } = await adminClient.storage
+    .from('images')
+    .upload(fileName, file, { upsert: false });
+    
+  if (error) {
+    console.error("Upload error:", error);
+    return null;
+  }
+  
+  const { data: urlData } = adminClient.storage.from('images').getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
 
 export async function createOrganization(formData: FormData) {
   const supabase = await createClient();
   const name = formData.get("name") as string;
-  const logo_url = formData.get("logo_url") as string;
+  let logo_url = formData.get("logo_url") as string;
+  const logoFile = formData.get("logo_file") as File | null;
+  if (logoFile && logoFile.size > 0) {
+    const uploadedUrl = await uploadImageToSupabase(logoFile);
+    if (uploadedUrl) logo_url = uploadedUrl;
+  }
 
   if (!name) return { error: "Name is required" };
 
@@ -25,7 +50,12 @@ export async function createOrganization(formData: FormData) {
 export async function updateOrganization(id: string, formData: FormData) {
   const supabase = await createClient();
   const name = formData.get("name") as string;
-  const logo_url = formData.get("logo_url") as string;
+  let logo_url = formData.get("logo_url") as string;
+  const logoFile = formData.get("logo_file") as File | null;
+  if (logoFile && logoFile.size > 0) {
+    const uploadedUrl = await uploadImageToSupabase(logoFile);
+    if (uploadedUrl) logo_url = uploadedUrl;
+  }
 
   if (!name) return { error: "Name is required" };
 
@@ -51,8 +81,6 @@ export async function toggleOrganizationActive(id: string, currentStatus: boolea
   revalidatePath("/admin/organizations");
   return { success: true };
 }
-
-import { createAdminClient } from "@/lib/supabase/admin";
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -144,7 +172,12 @@ export async function createCollection(formData: FormData) {
   const adminClient = createAdminClient();
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
-  const cover_image_url = formData.get("cover_image_url") as string;
+  let cover_image_url = formData.get("cover_image_url") as string;
+  const coverFile = formData.get("cover_image_file") as File | null;
+  if (coverFile && coverFile.size > 0) {
+    const uploadedUrl = await uploadImageToSupabase(coverFile);
+    if (uploadedUrl) cover_image_url = uploadedUrl;
+  }
   const organization_id = formData.get("organization_id") as string;
 
   if (!title) return { error: "Title is required" };
@@ -168,7 +201,12 @@ export async function updateCollection(id: string, formData: FormData) {
   const adminClient = createAdminClient();
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
-  const cover_image_url = formData.get("cover_image_url") as string;
+  let cover_image_url = formData.get("cover_image_url") as string;
+  const coverFile = formData.get("cover_image_file") as File | null;
+  if (coverFile && coverFile.size > 0) {
+    const uploadedUrl = await uploadImageToSupabase(coverFile);
+    if (uploadedUrl) cover_image_url = uploadedUrl;
+  }
   const organization_id = formData.get("organization_id") as string;
 
   if (!title) return { error: "Title is required" };

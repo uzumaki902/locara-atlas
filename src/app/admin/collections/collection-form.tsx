@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCollection, updateCollection, toggleCollectionPublish } from "../actions";
 import { toast } from "react-hot-toast";
+import { ImageUploadField } from "../image-upload-field";
 
 interface Organization {
   id: string;
@@ -124,13 +125,8 @@ export function CreateCollectionButton({ organizations }: { organizations: Organ
             />
           </Field>
 
-          <Field label="Cover Image URL (Optional)">
-            <input
-              name="cover_image_url"
-              type="url"
-              placeholder="https://example.com/cover.jpg"
-              className={inputCls}
-            />
+          <Field label="Cover Image (Optional)">
+            <ImageUploadField name="cover_image_file" label="Upload Cover Image" />
           </Field>
 
           <Field label="Organization">
@@ -247,13 +243,8 @@ export function CollectionRowActions({
             />
           </Field>
 
-          <Field label="Cover Image URL (Optional)">
-            <input
-              name="cover_image_url"
-              type="url"
-              defaultValue={collection.cover_image_url || ""}
-              className={inputCls}
-            />
+          <Field label="Cover Image (Optional)">
+            <ImageUploadField name="cover_image_file" defaultUrl={collection.cover_image_url} label="Upload New Cover Image" />
           </Field>
 
           <Field label="Organization">

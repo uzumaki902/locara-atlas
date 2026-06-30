@@ -67,9 +67,23 @@ export default async function OrganizationsPage() {
               {organizations.map((org) => (
                 <tr key={org.id} className="hover:bg-background/40 transition-colors">
                   <td className="px-5 py-3">
-                    <span className="text-[14px] font-medium text-foreground">
-                      {org.name}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      {org.logo_url ? (
+                        <div className="w-8 h-8 rounded border border-border overflow-hidden bg-background shrink-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={org.logo_url} alt={org.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded border border-border bg-background flex items-center justify-center shrink-0">
+                          <span className="text-[11px] font-medium text-text-secondary">
+                            {org.name.substring(0, 2).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-[14px] font-medium text-foreground">
+                        {org.name}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <span

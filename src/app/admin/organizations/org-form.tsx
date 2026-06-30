@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createOrganization, updateOrganization, toggleOrganizationActive } from "../actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { ImageUploadField } from "../image-upload-field";
 
 interface Organization {
   id: string;
@@ -76,12 +77,8 @@ export function CreateOrgButton() {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-medium text-text-secondary mb-1.5">Logo URL (Optional)</label>
-            <input 
-              name="logo_url" 
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-[14px] text-foreground focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all placeholder:text-text-secondary/50" 
-              placeholder="https://example.com/logo.png"
-            />
+            <label className="block text-[13px] font-medium text-text-secondary mb-1.5">Logo (Optional)</label>
+            <ImageUploadField name="logo_file" label="Upload Logo" />
           </div>
           {error && <p className="text-[13px] font-medium text-red-400">{error}</p>}
           <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
@@ -172,12 +169,8 @@ export function OrgRowActions({ org }: { org: Organization }) {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-medium text-text-secondary mb-1.5">Logo URL (Optional)</label>
-            <input 
-              name="logo_url" 
-              defaultValue={org.logo_url || ""} 
-              className="w-full bg-background border border-border rounded-md px-3 py-2 text-[14px] text-foreground focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all" 
-            />
+            <label className="block text-[13px] font-medium text-text-secondary mb-1.5">Logo (Optional)</label>
+            <ImageUploadField name="logo_file" defaultUrl={org.logo_url} label="Upload New Logo" />
           </div>
           {error && <p className="text-[13px] font-medium text-red-400">{error}</p>}
           <div className="flex justify-end gap-3 pt-4 border-t border-border mt-4">
