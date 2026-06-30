@@ -4,15 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
-import { Menu, X, LayoutDashboard, Building2, Users, Grid, Video, FileText, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, Building2, Users, Grid, FileText, LogOut } from "lucide-react";
 import { logout } from "@/app/actions";
+import { AssetsNavGroup, CollectionsNavGroup } from "./nav-group";
 
-const links = [
+const topLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Organizations", href: "/admin/organizations", icon: Building2 },
   { label: "Users", href: "/admin/users", icon: Users },
-  { label: "Collections", href: "/admin/collections", icon: Grid },
-  { label: "Videos", href: "/admin/videos", icon: Video },
+];
+
+const bottomLinks = [
   { label: "Requests", href: "/admin/requests", icon: FileText },
 ];
 
@@ -41,7 +43,36 @@ export default function MobileAdminNav() {
       {isOpen && (
         <div className="fixed inset-0 top-[64px] z-50 bg-background/95 backdrop-blur-md border-t border-white/5 flex flex-col p-6 overflow-y-auto">
           <nav className="flex flex-col gap-1.5 flex-1">
-            {links.map((link) => {
+            {topLinks.map((link) => {
+              const active =
+                link.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const Icon = link.icon;
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-[15px] font-medium transition-all ${
+                    active
+                      ? "bg-white/10 text-white border border-white/5 shadow-sm"
+                      : "text-text-secondary hover:text-white hover:bg-white/5 border border-transparent"
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 ${active ? "text-accent" : "text-text-secondary/70"} transition-colors`} />
+                  {link.label}
+                </Link>
+              );
+            })}
+
+            <div onClick={() => setIsOpen(false)}>
+              <CollectionsNavGroup />
+              <AssetsNavGroup />
+            </div>
+
+            {bottomLinks.map((link) => {
               const active =
                 link.href === "/admin"
                   ? pathname === "/admin"

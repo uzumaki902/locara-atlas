@@ -1,20 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { logout } from "@/app/actions";
-import { LayoutDashboard, Building2, Users, Grid, Video, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, Users, Grid, FileText, LogOut } from "lucide-react";
 import MobileAdminNav from "./mobile-admin-nav";
+import { AssetsNavGroup, CollectionsNavGroup } from "./nav-group";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const links = [
+  const topLinks = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "Organizations", href: "/admin/organizations", icon: Building2 },
     { label: "Users", href: "/admin/users", icon: Users },
-    { label: "Collections", href: "/admin/collections", icon: Grid },
-    { label: "Videos", href: "/admin/videos", icon: Video },
+  ];
+
+  const bottomLinks = [
     { label: "Requests", href: "/admin/requests", icon: FileText },
   ];
 
@@ -46,7 +48,24 @@ export default function AdminLayout({
         </div>
 
         <nav className="p-4 space-y-1.5 flex-1">
-          {links.map((link) => {
+          {topLinks.map((link) => {
+            const Icon = link.icon;
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center gap-3 w-full text-left rounded-xl px-4 py-3 text-[14px] font-medium text-text-secondary hover:text-white hover:bg-white/5 transition-all group"
+              >
+                <Icon className="w-4 h-4 text-text-secondary/70 group-hover:text-accent transition-colors" />
+                {link.label}
+              </Link>
+            )
+          })}
+          
+          <CollectionsNavGroup />
+          <AssetsNavGroup />
+
+          {bottomLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link
