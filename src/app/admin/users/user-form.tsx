@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 import { createUser, updateUser, toggleUserActive } from "../actions";
 
 interface Organization {
@@ -88,8 +89,10 @@ export function CreateUserButton({ organizations }: { organizations: Organizatio
     const res = await createUser(formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("User created successfully");
       setIsOpen(false);
       setLoading(false);
       router.refresh();
@@ -185,8 +188,10 @@ export function UserRowActions({
     const res = await updateUser(user.id, formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("User updated successfully");
       setIsEditOpen(false);
       setLoading(false);
       router.refresh();
@@ -196,8 +201,9 @@ export function UserRowActions({
   const handleToggleActive = async () => {
     const res = await toggleUserActive(user.id, user.is_active);
     if (res.error) {
-      alert(res.error);
+      toast.error(res.error);
     } else {
+      toast.success(`User ${user.is_active ? "deactivated" : "activated"}`);
       router.refresh();
     }
   };

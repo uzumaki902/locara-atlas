@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { submitDatasetRequest } from "@/app/actions";
+import { toast } from "react-hot-toast";
 
 export default function RequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,9 +20,12 @@ export default function RequestForm() {
 
     if (result.success) {
       setSuccess(true);
+      toast.success("Request submitted successfully!");
       (e.target as HTMLFormElement).reset();
     } else {
-      setError(result.error || "An unexpected error occurred.");
+      const errorMessage = result.error || "An unexpected error occurred.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
     
     setIsSubmitting(false);
@@ -29,17 +33,6 @@ export default function RequestForm() {
 
   return (
     <form onSubmit={handleSubmit} className="bg-surface border border-border/60 rounded-xl shadow-sm p-6 md:p-8 space-y-7">
-      {success && (
-        <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded text-[14px] font-medium">
-          Request submitted successfully! Our team will review it shortly.
-        </div>
-      )}
-      
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded text-[14px] font-medium">
-          {error}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">

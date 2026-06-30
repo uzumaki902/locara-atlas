@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   description: "Enterprise Dataset Delivery Platform",
 };
 
+import { Toaster } from "react-hot-toast";
+
 // Root Layout Component
 export default function RootLayout({
   children,
@@ -43,6 +45,30 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <Toaster 
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#14141F',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)',
+              fontSize: '13px',
+              fontWeight: 500,
+            },
+            success: {
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
       </body>
     </html>
   );

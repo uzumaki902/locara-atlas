@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createCollection, updateCollection, toggleCollectionPublish } from "../actions";
+import { toast } from "react-hot-toast";
 
 interface Organization {
   id: string;
@@ -89,8 +90,10 @@ export function CreateCollectionButton({ organizations }: { organizations: Organ
     const res = await createCollection(formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Collection created successfully");
       setIsOpen(false);
       setLoading(false);
       router.refresh();
@@ -187,8 +190,10 @@ export function CollectionRowActions({
     const res = await updateCollection(collection.id, formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Collection updated successfully");
       setIsEditOpen(false);
       setLoading(false);
       router.refresh();
@@ -196,10 +201,13 @@ export function CollectionRowActions({
   };
 
   const handleTogglePublish = async () => {
-    // if (confirm(`Are you sure you want to ${collection.is_published ? "unpublish" : "publish"} this collection?`)) {
-    //   await toggleCollectionPublish(collection.id, collection.is_published);
-    // }
-    await toggleCollectionPublish(collection.id, collection.is_published);
+    const res = await toggleCollectionPublish(collection.id, collection.is_published);
+    if (res?.error) {
+      toast.error(res.error);
+    } else {
+      toast.success(`Collection ${collection.is_published ? "unpublished" : "published"}`);
+      router.refresh();
+    }
   };
 
   return (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createOrganization, updateOrganization, toggleOrganizationActive } from "../actions";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
 
 interface Organization {
   id: string;
@@ -44,8 +45,10 @@ export function CreateOrgButton() {
     
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Organization created successfully");
       setIsOpen(false);
       setLoading(false);
       router.refresh();
@@ -118,8 +121,10 @@ export function OrgRowActions({ org }: { org: Organization }) {
     
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Organization updated successfully");
       setIsEditOpen(false);
       setLoading(false);
       router.refresh();
@@ -129,8 +134,9 @@ export function OrgRowActions({ org }: { org: Organization }) {
   const handleToggleActive = async () => {
     const res = await toggleOrganizationActive(org.id, org.is_active);
     if (res.error) {
-      alert(res.error);
+      toast.error(res.error);
     } else {
+      toast.success(`Organization ${org.is_active ? "deactivated" : "activated"}`);
       router.refresh();
     }
   };

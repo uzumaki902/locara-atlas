@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateDatasetRequest } from "../actions";
+import { toast } from "react-hot-toast";
 
 interface DatasetRequest {
   id: string;
@@ -82,8 +83,10 @@ export function RequestRowActions({ req }: { req: DatasetRequest }) {
     const res = await updateDatasetRequest(req.id, formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Request updated successfully");
       setIsEditOpen(false);
       setLoading(false);
       router.refresh();

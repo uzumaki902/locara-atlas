@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createVideo, updateVideo, deleteVideo } from "../actions";
+import { toast } from "react-hot-toast";
 
 interface Collection {
   id: string;
@@ -163,8 +164,10 @@ export function CreateVideoButton({ collections }: { collections: Collection[] }
     const res = await createVideo(formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Video added successfully");
       setIsOpen(false);
       setLoading(false);
       router.refresh();
@@ -233,8 +236,10 @@ export function VideoRowActions({
     const res = await updateVideo(video.video_id, formData);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Video updated successfully");
       setIsEditOpen(false);
       setLoading(false);
       router.refresh();
@@ -247,8 +252,10 @@ export function VideoRowActions({
     const res = await deleteVideo(video.video_id);
     if (res.error) {
       setError(res.error);
+      toast.error(res.error);
       setLoading(false);
     } else {
+      toast.success("Video deleted successfully");
       setIsDeleteOpen(false);
       setLoading(false);
       router.refresh();
